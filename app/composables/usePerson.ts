@@ -1,9 +1,13 @@
 import type { Person, CreatePersonInput, UpdatePersonInput } from '../../domain/entities/person'
+import { getErrorMessage } from '../utils/errorMessage'
 
 export function usePerson() {
   const nuxtApp = useNuxtApp()
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const repos = nuxtApp.$repos as any
+  function getRepos(): any {
+    return (nuxtApp as Record<string, unknown>).$repos
+  }
 
   const persons = ref<Person[]>([])
   const currentPerson = ref<Person | null>(null)
@@ -14,10 +18,10 @@ export function usePerson() {
     loading.value = true
     error.value = null
     try {
-      persons.value = await repos.person.getByTree(treeId)
+      persons.value = await getRepos().person.getByTree(treeId)
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal memuat anggota keluarga'
+      error.value = getErrorMessage(e, 'Gagal memuat anggota keluarga')
     }
     finally {
       loading.value = false
@@ -28,10 +32,10 @@ export function usePerson() {
     loading.value = true
     error.value = null
     try {
-      currentPerson.value = await repos.person.getById(id)
+      currentPerson.value = await getRepos().person.getById(id)
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal memuat data anggota'
+      error.value = getErrorMessage(e, 'Gagal memuat data anggota')
     }
     finally {
       loading.value = false
@@ -42,12 +46,12 @@ export function usePerson() {
     loading.value = true
     error.value = null
     try {
-      const person = await repos.person.create(input)
+      const person = await getRepos().person.create(input)
       persons.value.push(person)
       return person
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal menambah anggota keluarga'
+      error.value = getErrorMessage(e, 'Gagal menambah anggota keluarga')
       return null
     }
     finally {
@@ -59,14 +63,14 @@ export function usePerson() {
     loading.value = true
     error.value = null
     try {
-      const updated = await repos.person.update(id, input)
+      const updated = await getRepos().person.update(id, input)
       const idx = persons.value.findIndex(p => p.id === id)
       if (idx !== -1) persons.value[idx] = updated
       if (currentPerson.value?.id === id) currentPerson.value = updated
       return true
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal memperbarui data anggota'
+      error.value = getErrorMessage(e, 'Gagal memperbarui data anggota')
       return false
     }
     finally {
@@ -78,13 +82,13 @@ export function usePerson() {
     loading.value = true
     error.value = null
     try {
-      await repos.person.delete(id)
+      await getRepos().person.delete(id)
       persons.value = persons.value.filter(p => p.id !== id)
       if (currentPerson.value?.id === id) currentPerson.value = null
       return true
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal menghapus anggota keluarga'
+      error.value = getErrorMessage(e, 'Gagal menghapus anggota keluarga')
       return false
     }
     finally {
@@ -94,7 +98,7 @@ export function usePerson() {
 
   async function searchPersons(treeId: string, query: string): Promise<Person[]> {
     try {
-      return await repos.person.search(treeId, query)
+      return await getRepos().person.search(treeId, query)
     }
     catch {
       return []

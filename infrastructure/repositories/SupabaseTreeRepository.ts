@@ -17,12 +17,21 @@ export class SupabaseTreeRepository implements ITreeRepository {
   }
 
   async getAccessible(userId: string): Promise<Tree[]> {
-    // Ambil semua tree yang bisa diakses user (via tree_members)
+    // Ambil tree_id dari tree_members, lalu query trees
+    const { data: memberData, error: memberError } = await this.client
+      .from('tree_members')
+      .select('tree_id')
+      .eq('user_id', userId)
+      .not('accepted_at', 'is', null)
+    if (memberError) throw memberError
+
+    const treeIds = (memberData ?? []).map((m: { tree_id: string }) => m.tree_id)
+    if (treeIds.length === 0) return []
+
     const { data, error } = await this.client
       .from('trees')
-      .select('*, tree_members!inner(user_id, accepted_at)')
-      .eq('tree_members.user_id', userId)
-      .not('tree_members.accepted_at', 'is', null)
+      .select('*')
+      .in('id', treeIds)
       .order('created_at', { ascending: false })
     if (error) throw error
     return (data ?? []).map(treeFromDB)

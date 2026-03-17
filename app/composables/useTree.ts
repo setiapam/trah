@@ -1,10 +1,15 @@
 import type { Tree, CreateTreeInput, UpdateTreeInput } from '../../domain/entities/tree'
+import { getErrorMessage } from '../utils/errorMessage'
 
 export function useTree() {
   const nuxtApp = useNuxtApp()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const repos = nuxtApp.$repos as any
   const user = useSupabaseUser()
+
+  // Lazy getter — hindari capture undefined saat SSR
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function getRepos(): any {
+    return (nuxtApp as Record<string, unknown>).$repos
+  }
 
   const trees = ref<Tree[]>([])
   const loading = ref(false)
@@ -15,6 +20,7 @@ export function useTree() {
     loading.value = true
     error.value = null
     try {
+      const repos = getRepos()
       const [owned, shared] = await Promise.all([
         repos.tree.getByOwner(user.value.id),
         repos.tree.getAccessible(user.value.id),
@@ -28,7 +34,7 @@ export function useTree() {
       })
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal memuat daftar trah'
+      error.value = getErrorMessage(e, 'Gagal memuat daftar trah')
     }
     finally {
       loading.value = false
@@ -39,12 +45,12 @@ export function useTree() {
     loading.value = true
     error.value = null
     try {
-      const tree = await repos.tree.create(input)
+      const tree = await getRepos().tree.create(input)
       trees.value.unshift(tree)
       return tree
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal membuat trah'
+      error.value = getErrorMessage(e, 'Gagal membuat trah')
       return null
     }
     finally {
@@ -56,13 +62,13 @@ export function useTree() {
     loading.value = true
     error.value = null
     try {
-      const updated = await repos.tree.update(id, input)
+      const updated = await getRepos().tree.update(id, input)
       const idx = trees.value.findIndex(t => t.id === id)
       if (idx !== -1) trees.value[idx] = updated
       return true
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal memperbarui trah'
+      error.value = getErrorMessage(e, 'Gagal memperbarui trah')
       return false
     }
     finally {
@@ -74,12 +80,12 @@ export function useTree() {
     loading.value = true
     error.value = null
     try {
-      await repos.tree.delete(id)
+      await getRepos().tree.delete(id)
       trees.value = trees.value.filter(t => t.id !== id)
       return true
     }
     catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal menghapus trah'
+      error.value = getErrorMessage(e, 'Gagal menghapus trah')
       return false
     }
     finally {
