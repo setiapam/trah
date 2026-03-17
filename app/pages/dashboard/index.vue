@@ -1,11 +1,12 @@
 <template>
   <div>
-    <div class="mb-6 flex items-center justify-between">
+    <div class="mb-8 flex items-start justify-between gap-4">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-          Selamat datang{{ profile?.displayName ? `, ${profile.displayName}` : '' }}
+        <p class="trah-ornament text-amber-700/60 dark:text-amber-400/50 mb-1">Selamat datang</p>
+        <h1 class="font-javanese text-2xl sm:text-3xl font-bold text-stone-800 dark:text-stone-100">
+          {{ profile?.displayName ?? 'Anggota Trah' }}
         </h1>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Kelola silsilah keluarga Anda</p>
+        <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Kelola silsilah keluarga Anda</p>
       </div>
       <UButton to="/tree/new" icon="i-heroicons-plus" color="primary">
         Buat Trah Baru
@@ -21,30 +22,35 @@
     <UAlert v-else-if="error" color="error" icon="i-heroicons-exclamation-triangle" :title="error" />
 
     <!-- Empty state -->
-    <UCard v-else-if="trees.length === 0" class="text-center py-16">
-      <UIcon name="i-heroicons-user-group" class="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-      <p class="text-gray-500 dark:text-gray-400 mb-4">Belum ada trah. Mulai dengan membuat trah pertama Anda.</p>
+    <div v-else-if="trees.length === 0" class="card-emas bg-white dark:bg-stone-900 rounded-xl shadow-sm ring-1 ring-amber-200/60 dark:ring-stone-700 text-center py-16 px-8">
+      <div class="w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-4">
+        <UIcon name="i-heroicons-user-group" class="h-8 w-8 text-amber-600 dark:text-amber-400" />
+      </div>
+      <p class="font-javanese text-stone-700 dark:text-stone-300 mb-1">Belum ada trah</p>
+      <p class="text-sm text-stone-500 dark:text-stone-400 mb-6">Mulai dengan membuat trah pertama Anda.</p>
       <UButton to="/tree/new" icon="i-heroicons-plus">Buat Trah Baru</UButton>
-    </UCard>
+    </div>
 
     <!-- Tree list -->
     <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      <UCard
+      <div
         v-for="tree in trees"
         :key="tree.id"
-        class="cursor-pointer hover:shadow-md transition-shadow"
+        class="card-emas bg-white dark:bg-stone-900 rounded-xl shadow-sm ring-1 ring-amber-200/60 dark:ring-stone-700/60 hover:shadow-md hover:ring-amber-300 dark:hover:ring-amber-700/60 transition-all cursor-pointer p-5"
         @click="navigateTo(`/tree/${tree.id}`)"
       >
         <div class="flex items-start justify-between">
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-2 mb-1">
-              <UIcon name="i-heroicons-user-group" class="h-5 w-5 text-primary-500 flex-shrink-0" />
-              <h3 class="font-semibold text-gray-900 dark:text-white truncate">{{ tree.name }}</h3>
+              <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center flex-shrink-0">
+                <UIcon name="i-heroicons-user-group" class="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              </div>
+              <h3 class="font-javanese font-semibold text-stone-800 dark:text-stone-100 truncate">{{ tree.name }}</h3>
             </div>
-            <p v-if="tree.description" class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">
+            <p v-if="tree.description" class="text-sm text-stone-500 dark:text-stone-400 line-clamp-2 mt-2">
               {{ tree.description }}
             </p>
-            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">
+            <p class="text-xs text-stone-400 dark:text-stone-500 mt-3">
               Dibuat {{ formatDate(tree.createdAt) }}
             </p>
           </div>
@@ -58,7 +64,7 @@
             />
           </UDropdownMenu>
         </div>
-      </UCard>
+      </div>
     </div>
 
     <!-- Edit tree modal -->

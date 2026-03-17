@@ -6,11 +6,11 @@
         <div class="flex items-center gap-2 mb-1">
           <UButton to="/dashboard" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" size="sm" />
           <USkeleton v-if="!currentTree" class="h-7 w-48" />
-          <h1 v-else class="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 v-else class="font-javanese text-2xl font-bold text-stone-800 dark:text-stone-100">
             {{ currentTree.name }}
           </h1>
         </div>
-        <p v-if="currentTree?.description" class="text-sm text-gray-500 dark:text-gray-400 ml-9">
+        <p v-if="currentTree?.description" class="text-sm text-stone-500 dark:text-stone-400 ml-9 italic">
           {{ currentTree.description }}
         </p>
       </div>
@@ -26,23 +26,23 @@
     <UAlert v-if="error" color="error" :title="error" class="mb-4" />
 
     <!-- Stats -->
-    <div v-if="currentTree" class="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-4">
-      <UCard class="text-center py-4">
-        <p class="text-2xl font-bold text-primary-600">{{ persons.length }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Anggota</p>
-      </UCard>
-      <UCard class="text-center py-4">
-        <p class="text-2xl font-bold text-primary-600">{{ relationships.length }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Relasi</p>
-      </UCard>
-      <UCard class="text-center py-4">
-        <p class="text-2xl font-bold text-primary-600">{{ aliveCount }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Masih Hidup</p>
-      </UCard>
-      <UCard class="text-center py-4">
-        <p class="text-2xl font-bold text-primary-600">{{ generationCount }}</p>
-        <p class="text-xs text-gray-500 dark:text-gray-400">Generasi</p>
-      </UCard>
+    <div v-if="currentTree" class="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
+      <div class="card-emas bg-white dark:bg-stone-900 rounded-xl shadow-sm ring-1 ring-amber-200/50 dark:ring-stone-700/60 text-center py-4 px-3">
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 font-javanese">{{ persons.length }}</p>
+        <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">Anggota</p>
+      </div>
+      <div class="card-emas bg-white dark:bg-stone-900 rounded-xl shadow-sm ring-1 ring-amber-200/50 dark:ring-stone-700/60 text-center py-4 px-3">
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 font-javanese">{{ relationships.length }}</p>
+        <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">Relasi</p>
+      </div>
+      <div class="card-emas bg-white dark:bg-stone-900 rounded-xl shadow-sm ring-1 ring-amber-200/50 dark:ring-stone-700/60 text-center py-4 px-3">
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 font-javanese">{{ aliveCount }}</p>
+        <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">Masih Hidup</p>
+      </div>
+      <div class="card-emas bg-white dark:bg-stone-900 rounded-xl shadow-sm ring-1 ring-amber-200/50 dark:ring-stone-700/60 text-center py-4 px-3">
+        <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 font-javanese">{{ generationCount }}</p>
+        <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">Generasi</p>
+      </div>
     </div>
 
     <!-- Search -->

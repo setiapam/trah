@@ -17,6 +17,60 @@ Aplikasi ini mendukung format standar genealogi internasional **GEDCOM 5.5.1** u
 
 ---
 
+## Desain Visual — Sistem Batik Jawa (WAJIB diikuti)
+
+Semua UI harus mencerminkan identitas budaya Jawa. Ini bukan opsional — selalu terapkan prinsip desain ini pada setiap komponen, halaman, dan layout baru.
+
+### Filosofi
+Desain Trah terinspirasi motif batik tradisional Jawa Tengah (kawung, parang) dan estetika keraton. Kesan yang ingin dihadirkan: **anggun, hangat, berbudaya, modern**.
+
+### Palet Warna
+
+| Token | Nilai | Keterangan |
+|-------|-------|------------|
+| Primary | `amber` (via `app.config.ts`) | Emas / emas Jawa |
+| Neutral | `stone` (via `app.config.ts`) | Tanah / batu alam |
+| `--trah-emas` | `#d97706` | Amber utama |
+| `--trah-emas-light` | `#fbbf24` | Emas terang |
+| `--trah-emas-dark` | `#92400e` | Soga coklat tua |
+| `--trah-soga` | `#78350f` | Coklat soga batik |
+| `--trah-gading` | `#fffbeb` | Krem / gading |
+
+### Tipografi
+
+- **Heading (h1, h2):** Playfair Display serif — dimuat dari Google Fonts di `main.css`
+- **Body:** System font stack (default Tailwind)
+- Gunakan class `font-javanese` untuk judul yang ingin menonjol
+
+### Kelas CSS Kustom (tersedia di `app/assets/css/main.css`)
+
+| Kelas | Keterangan |
+|-------|------------|
+| `bg-kawung` | Background motif kawung 40px |
+| `bg-kawung-lg` | Background motif kawung 80px |
+| `bg-parang` | Background motif parang diagonal |
+| `border-emas-top` | Border top gradient emas (via `::before`) |
+| `card-emas` | Card dengan gold top bar ornamen |
+| `trah-divider` | Divider emas dengan teks tengah |
+| `trah-title` | Judul dengan underline gradient emas |
+| `trah-ornament` | Label kecil kursif dengan berlian di kiri-kanan |
+| `trah-logo` | Logo "Trah" gradient emas |
+| `font-javanese` | Playfair Display serif |
+
+### Aturan Penerapan
+
+1. **Layouts:** `default.vue` — header pakai `border-emas-top`, background `bg-kawung`, logo pakai `trah-logo`. `auth.vue` — background `bg-kawung-lg` di atas `bg-amber-50`, card dengan `card-emas`.
+2. **Headings h1/h2:** Selalu tambahkan `font-javanese` dan warna `text-stone-800`.
+3. **Cards:** Gunakan `card-emas` + `ring-1 ring-amber-200/60` alih-alih `UCard` bawaan untuk elemen utama.
+4. **Stat numbers:** Pakai `text-amber-600 font-javanese`.
+5. **Dividers:** Pakai `trah-divider` bukan `border-t` polos.
+6. **Subteks dekoratif:** Pakai `trah-ornament` untuk label kecil bertema (misal: "Anggota Keluarga", "Fitur Unggulan").
+7. **Hero/banner gelap:** Gunakan `from-amber-950 via-stone-900 to-amber-900` + `bg-kawung-lg`.
+8. **Empty state icons:** Letakkan dalam `w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center`.
+9. **Jangan** gunakan warna `gray-*` — ganti dengan `stone-*` yang lebih hangat.
+
+---
+
 ## Tech Stack (WAJIB diikuti)
 
 | Layer | Teknologi | Versi |

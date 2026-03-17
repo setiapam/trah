@@ -1,18 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-950">
-    <!-- Header -->
-    <header class="border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-50">
+  <div class="min-h-screen bg-stone-50 dark:bg-stone-950 bg-kawung">
+    <!-- Header with gold border -->
+    <header class="border-emas-top border-b border-stone-200 dark:border-stone-800 bg-white/95 dark:bg-stone-900/95 backdrop-blur-sm sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <NuxtLink to="/" class="flex items-center gap-2">
-          <span class="text-xl font-bold text-primary-600 dark:text-primary-400">Trah</span>
-          <span class="text-xs text-gray-500 hidden sm:block italic">Nguri-uri Trah, Njaga Sejarah</span>
+        <NuxtLink to="/" class="flex items-center gap-3">
+          <span class="trah-logo text-2xl">Trah</span>
+          <span class="hidden sm:block text-xs text-amber-700/70 dark:text-amber-400/60 italic font-javanese">
+            Nguri-uri Trah, Njaga Sejarah
+          </span>
         </NuxtLink>
 
         <nav class="flex items-center gap-2">
           <template v-if="user">
             <NuxtLink
               to="/dashboard"
-              class="hidden sm:block text-sm text-gray-600 dark:text-gray-400 hover:text-primary-600 px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              class="hidden sm:block text-sm text-stone-600 dark:text-stone-400 hover:text-amber-700 dark:hover:text-amber-400 px-3 py-2 rounded-md hover:bg-amber-50 dark:hover:bg-stone-800 transition-colors font-medium"
             >
               Dashboard
             </NuxtLink>
@@ -21,7 +23,7 @@
               <UButton variant="ghost" size="sm" class="gap-2">
                 <UAvatar :alt="user.email" size="xs" />
                 <span class="hidden sm:block text-sm">{{ user.email }}</span>
-                <UIcon name="i-heroicons-chevron-down" class="h-4 w-4 text-gray-400" />
+                <UIcon name="i-heroicons-chevron-down" class="h-4 w-4 text-stone-400" />
               </UButton>
             </UDropdownMenu>
           </template>

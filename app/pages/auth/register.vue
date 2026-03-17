@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="mb-6 text-center">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Daftar</h1>
-      <p class="mt-1 text-sm text-gray-500">Mulai catat silsilah keluarga Anda</p>
+      <h1 class="font-javanese text-2xl font-bold text-stone-800 dark:text-stone-100">Daftar</h1>
+      <p class="mt-1 text-sm text-amber-700/70 dark:text-amber-400/70 italic">Mulai catat silsilah keluarga Anda</p>
     </div>
 
     <!-- Sukses: verifikasi email -->
@@ -85,10 +85,8 @@
         </UButton>
       </UForm>
 
-      <div class="mt-4 flex items-center gap-3">
-        <div class="flex-1 border-t border-gray-200 dark:border-gray-700" />
-        <span class="text-xs text-gray-400">atau</span>
-        <div class="flex-1 border-t border-gray-200 dark:border-gray-700" />
+      <div class="mt-4 trah-divider text-xs opacity-70">
+        atau
       </div>
 
       <UButton

@@ -10,8 +10,8 @@
       >
         Kembali
       </UButton>
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Buat Trah Baru</h1>
-      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Langkah {{ step }} dari 2</p>
+      <h1 class="font-javanese text-2xl font-bold text-stone-800 dark:text-stone-100">Buat Trah Baru</h1>
+      <p class="mt-1 text-sm text-stone-500 dark:text-stone-400">Langkah {{ step }} dari 2</p>
     </div>
 
     <!-- Progress -->

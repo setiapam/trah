@@ -1,2 +1,141 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* ============================================================
+   TRAH — Javanese Cultural Design System
+   Terinspirasi motif batik kawung & parang dari Jawa Tengah
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+/* ---- Color tokens ---- */
+:root {
+  --trah-emas:       #d97706;
+  --trah-emas-light: #fbbf24;
+  --trah-emas-dark:  #92400e;
+  --trah-soga:       #78350f;
+  --trah-gading:     #fffbeb;
+  --trah-gading-2:   #fef3c7;
+}
+
+/* ---- Typography ---- */
+.font-javanese {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Headings get Playfair Display */
+h1, .h1 { font-family: 'Playfair Display', Georgia, serif; }
+h2, .h2 { font-family: 'Playfair Display', Georgia, serif; }
+
+/* ---- Kawung batik SVG backgrounds ---- */
+.bg-kawung {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cellipse cx='10' cy='20' rx='8' ry='8' fill='none' stroke='%23d9770618' stroke-width='1'/%3E%3Cellipse cx='30' cy='20' rx='8' ry='8' fill='none' stroke='%23d9770618' stroke-width='1'/%3E%3Cellipse cx='20' cy='10' rx='8' ry='8' fill='none' stroke='%23d9770618' stroke-width='1'/%3E%3Cellipse cx='20' cy='30' rx='8' ry='8' fill='none' stroke='%23d9770618' stroke-width='1'/%3E%3C/svg%3E");
+  background-size: 40px 40px;
+}
+
+.bg-kawung-lg {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cellipse cx='20' cy='40' rx='17' ry='17' fill='none' stroke='%23d9770612' stroke-width='1.5'/%3E%3Cellipse cx='60' cy='40' rx='17' ry='17' fill='none' stroke='%23d9770612' stroke-width='1.5'/%3E%3Cellipse cx='40' cy='20' rx='17' ry='17' fill='none' stroke='%23d9770612' stroke-width='1.5'/%3E%3Cellipse cx='40' cy='60' rx='17' ry='17' fill='none' stroke='%23d9770612' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-size: 80px 80px;
+}
+
+/* Parang diagonal motif */
+.bg-parang {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cpath d='M0 60 L60 0' stroke='%23d9770610' stroke-width='1' fill='none'/%3E%3Cpath d='M-20 60 L40 0' stroke='%23d9770610' stroke-width='1' fill='none'/%3E%3Cpath d='M20 60 L80 0' stroke='%23d9770610' stroke-width='1' fill='none'/%3E%3C/svg%3E");
+  background-size: 60px 60px;
+}
+
+/* ---- Ornamental gold top border ---- */
+.border-emas-top {
+  position: relative;
+}
+.border-emas-top::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #92400e, #d97706, #fbbf24, #d97706, #92400e);
+}
+
+/* ---- Gold divider with diamond ---- */
+.trah-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--trah-emas);
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+}
+.trah-divider::before,
+.trah-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--trah-emas), transparent);
+}
+
+/* ---- Section title with underline ornament ---- */
+.trah-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.625rem;
+}
+.trah-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--trah-emas), var(--trah-emas-light), transparent);
+}
+
+/* ---- Gold accent card top bar ---- */
+.card-emas {
+  position: relative;
+  overflow: hidden;
+}
+.card-emas::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #92400e, #d97706, #fbbf24, #d97706, #92400e);
+  z-index: 1;
+}
+
+/* ---- Warm backgrounds ---- */
+.bg-gading {
+  background-color: var(--trah-gading);
+}
+.bg-gading-2 {
+  background-color: var(--trah-gading-2);
+}
+
+/* ---- Logo text ornament ---- */
+.trah-logo {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--trah-emas-dark), var(--trah-emas), var(--trah-emas-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ---- Hero diamond ornament ---- */
+.trah-ornament {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--trah-emas);
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+}
+.trah-ornament::before,
+.trah-ornament::after {
+  content: '◆';
+  font-size: 0.5rem;
+  opacity: 0.7;
+}
