@@ -19,6 +19,15 @@
               Dashboard
             </NuxtLink>
 
+            <UButton
+              :icon="colorModeIcon"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              :title="colorModeLabel"
+              @click="cycleColorMode"
+            />
+
             <UDropdownMenu :items="userMenuItems">
               <UButton variant="ghost" size="sm" class="gap-2">
                 <UAvatar :alt="user.email" size="xs" />
@@ -29,6 +38,14 @@
           </template>
 
           <template v-else>
+            <UButton
+              :icon="colorModeIcon"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              :title="colorModeLabel"
+              @click="cycleColorMode"
+            />
             <UButton to="/auth/login" variant="ghost" size="sm">Masuk</UButton>
             <UButton to="/auth/register" size="sm">Daftar</UButton>
           </template>
@@ -45,6 +62,25 @@
 
 <script setup lang="ts">
 const { user, signOut } = useAuth()
+const colorMode = useColorMode()
+
+const colorModeIcon = computed(() => {
+  if (colorMode.preference === 'dark') return 'i-heroicons-moon'
+  if (colorMode.preference === 'light') return 'i-heroicons-sun'
+  return 'i-heroicons-computer-desktop'
+})
+
+const colorModeLabel = computed(() => {
+  if (colorMode.preference === 'dark') return 'Mode Gelap'
+  if (colorMode.preference === 'light') return 'Mode Terang'
+  return 'Ikuti Sistem'
+})
+
+function cycleColorMode() {
+  const modes = ['system', 'light', 'dark'] as const
+  const current = modes.indexOf(colorMode.preference as typeof modes[number])
+  colorMode.preference = modes[(current + 1) % modes.length]
+}
 
 const userMenuItems = computed(() => [
   [
