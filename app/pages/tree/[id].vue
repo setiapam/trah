@@ -1,0 +1,274 @@
+<template>
+  <div>
+    <!-- Header -->
+    <div class="mb-6 flex items-start justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <UButton to="/dashboard" icon="i-heroicons-arrow-left" color="neutral" variant="ghost" size="sm" />
+          <USkeleton v-if="!currentTree" class="h-7 w-48" />
+          <h1 v-else class="text-2xl font-bold text-gray-900 dark:text-white">
+            {{ currentTree.name }}
+          </h1>
+        </div>
+        <p v-if="currentTree?.description" class="text-sm text-gray-500 dark:text-gray-400 ml-9">
+          {{ currentTree.description }}
+        </p>
+      </div>
+      <UButton
+        v-if="currentTree"
+        icon="i-heroicons-user-plus"
+        @click="openAddPerson"
+      >
+        Tambah Anggota
+      </UButton>
+    </div>
+
+    <UAlert v-if="error" color="error" :title="error" class="mb-4" />
+
+    <!-- Stats -->
+    <div v-if="currentTree" class="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-4">
+      <UCard class="text-center py-4">
+        <p class="text-2xl font-bold text-primary-600">{{ persons.length }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Anggota</p>
+      </UCard>
+      <UCard class="text-center py-4">
+        <p class="text-2xl font-bold text-primary-600">{{ relationships.length }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Relasi</p>
+      </UCard>
+      <UCard class="text-center py-4">
+        <p class="text-2xl font-bold text-primary-600">{{ aliveCount }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Masih Hidup</p>
+      </UCard>
+      <UCard class="text-center py-4">
+        <p class="text-2xl font-bold text-primary-600">{{ generationCount }}</p>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Generasi</p>
+      </UCard>
+    </div>
+
+    <!-- Search -->
+    <div class="mb-4 flex gap-2">
+      <UInput
+        v-model="searchQuery"
+        icon="i-heroicons-magnifying-glass"
+        placeholder="Cari anggota..."
+        class="flex-1"
+      />
+    </div>
+
+    <!-- Loading skeletons -->
+    <div v-if="personLoading" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <USkeleton v-for="i in 6" :key="i" class="h-24 rounded-xl" />
+    </div>
+
+    <!-- Empty state -->
+    <UCard v-else-if="filteredPersons.length === 0 && !searchQuery" class="text-center py-12">
+      <UIcon name="i-heroicons-users" class="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+      <p class="text-gray-500 dark:text-gray-400 mb-3">Belum ada anggota keluarga.</p>
+      <UButton icon="i-heroicons-user-plus" @click="openAddPerson">Tambah Anggota Pertama</UButton>
+    </UCard>
+
+    <!-- No search results -->
+    <UCard v-else-if="filteredPersons.length === 0" class="text-center py-8">
+      <p class="text-gray-500 dark:text-gray-400">Tidak ada anggota yang sesuai dengan "{{ searchQuery }}"</p>
+    </UCard>
+
+    <!-- Person grid -->
+    <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <UCard
+        v-for="person in filteredPersons"
+        :key="person.id"
+        class="cursor-pointer hover:shadow-md transition-shadow"
+        @click="navigateTo(`/person/${person.id}`)"
+      >
+        <div class="flex items-center gap-3">
+          <UAvatar
+            :src="person.photoUrl ?? undefined"
+            :alt="getFullName(person)"
+            :ui="{ root: 'flex-shrink-0' }"
+            size="lg"
+          >
+            <template v-if="!person.photoUrl" #fallback>
+              <UIcon
+                :name="person.gender === 'M' ? 'i-heroicons-user' : person.gender === 'F' ? 'i-heroicons-user' : 'i-heroicons-user'"
+                class="h-5 w-5"
+              />
+            </template>
+          </UAvatar>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5">
+              <p class="font-medium text-gray-900 dark:text-white truncate">{{ getFullName(person) }}</p>
+              <UBadge
+                v-if="currentTree?.rootPersonId === person.id"
+                size="xs"
+                color="primary"
+                variant="soft"
+              >
+                Akar
+              </UBadge>
+            </div>
+            <p v-if="person.nickname" class="text-xs text-gray-400 dark:text-gray-500 truncate">
+              "{{ person.nickname }}"
+            </p>
+            <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              <span v-if="person.birthDate">{{ formatYear(person.birthDate) }}</span>
+              <span v-if="person.birthDate && (person.deathDate || !person.isAlive)"> – </span>
+              <span v-if="!person.isAlive || person.deathDate">{{ person.deathDate ? formatYear(person.deathDate) : '†' }}</span>
+              <span v-if="!person.birthDate && person.isAlive" class="text-green-500">Masih hidup</span>
+            </p>
+          </div>
+          <UDropdownMenu :items="personMenuItems(person)">
+            <UButton
+              icon="i-heroicons-ellipsis-vertical"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              @click.stop
+            />
+          </UDropdownMenu>
+        </div>
+      </UCard>
+    </div>
+
+    <!-- PersonForm slideover -->
+    <PersonPersonForm
+      v-if="currentTree"
+      :open="showPersonForm"
+      :tree-id="currentTree.id"
+      :person="editingPerson"
+      @close="showPersonForm = false"
+      @saved="onPersonSaved"
+    />
+
+    <!-- Confirm delete person -->
+    <UModal v-model:open="showDeletePersonModal">
+      <template #content>
+        <UCard>
+          <template #header>
+            <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">Hapus Anggota</h3>
+          </template>
+          <p class="text-gray-600 dark:text-gray-400">
+            Apakah Anda yakin ingin menghapus
+            <strong>{{ deletePersonTarget ? getFullName(deletePersonTarget) : '' }}</strong>?
+            Semua relasi terkait akan ikut terhapus.
+          </p>
+          <template #footer>
+            <div class="flex justify-end gap-2">
+              <UButton color="neutral" variant="outline" @click="showDeletePersonModal = false">Batal</UButton>
+              <UButton color="error" :loading="personLoading" @click="confirmDeletePerson">Hapus</UButton>
+            </div>
+          </template>
+        </UCard>
+      </template>
+    </UModal>
+  </div>
+</template>
+
+<script setup lang="ts">
+import type { Person } from '../../../domain/entities/person'
+import { getFullName } from '../../../domain/entities/person'
+
+definePageMeta({ middleware: 'auth' })
+
+const route = useRoute()
+const treeId = route.params.id as string
+const toast = useToast()
+
+const nuxtApp = useNuxtApp()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const repos = nuxtApp.$repos as any
+
+const currentTree = ref<import('../../../domain/entities/tree').Tree | null>(null)
+const { persons, loading: personLoading, error, fetchPersons, deletePerson } = usePerson()
+const { relationships, fetchRelationships } = useRelationship()
+
+const searchQuery = ref('')
+const showPersonForm = ref(false)
+const editingPerson = ref<Person | null>(null)
+const showDeletePersonModal = ref(false)
+const deletePersonTarget = ref<Person | null>(null)
+
+useHead(() => ({
+  title: currentTree.value ? `${currentTree.value.name} — Trah` : 'Silsilah — Trah',
+}))
+
+onMounted(async () => {
+  const [tree] = await Promise.all([
+    repos.tree.getById(treeId),
+    fetchPersons(treeId),
+    fetchRelationships(treeId),
+  ])
+  currentTree.value = tree
+})
+
+const filteredPersons = computed(() => {
+  if (!searchQuery.value.trim()) return persons.value
+  const q = searchQuery.value.toLowerCase()
+  return persons.value.filter(p =>
+    p.firstName.toLowerCase().includes(q)
+    || (p.lastName ?? '').toLowerCase().includes(q)
+    || (p.nickname ?? '').toLowerCase().includes(q),
+  )
+})
+
+const aliveCount = computed(() => persons.value.filter(p => p.isAlive).length)
+const generationCount = computed(() => {
+  // Rough estimation: unique birth decades
+  const years = persons.value
+    .filter(p => p.birthDate)
+    .map(p => Math.floor(new Date(p.birthDate!).getFullYear() / 25))
+  const unique = new Set(years)
+  return unique.size || 1
+})
+
+function formatYear(date: string): string {
+  return new Date(date).getFullYear().toString()
+}
+
+function openAddPerson() {
+  editingPerson.value = null
+  showPersonForm.value = true
+}
+
+function personMenuItems(person: Person) {
+  return [
+    [{
+      label: 'Lihat Detail',
+      icon: 'i-heroicons-eye',
+      onSelect: () => navigateTo(`/person/${person.id}`),
+    }],
+    [{
+      label: 'Edit',
+      icon: 'i-heroicons-pencil',
+      onSelect: () => {
+        editingPerson.value = person
+        showPersonForm.value = true
+      },
+    }, {
+      label: 'Hapus',
+      icon: 'i-heroicons-trash',
+      color: 'error' as const,
+      onSelect: () => {
+        deletePersonTarget.value = person
+        showDeletePersonModal.value = true
+      },
+    }],
+  ]
+}
+
+function onPersonSaved(person: Person) {
+  showPersonForm.value = false
+  toast.add({ title: `${getFullName(person)} berhasil disimpan`, color: 'success' })
+}
+
+async function confirmDeletePerson() {
+  if (!deletePersonTarget.value) return
+  const ok = await deletePerson(deletePersonTarget.value.id)
+  if (ok) {
+    showDeletePersonModal.value = false
+    toast.add({ title: 'Anggota berhasil dihapus', color: 'success' })
+  }
+  else {
+    toast.add({ title: error.value ?? 'Gagal menghapus', color: 'error' })
+  }
+}
+</script>
