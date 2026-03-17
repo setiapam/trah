@@ -1,7 +1,7 @@
 <template>
   <div class="relative w-full h-full min-h-[600px] bg-amber-50 bg-kawung rounded-xl overflow-hidden border border-amber-200/60">
     <!-- Empty state -->
-    <div v-if="!rootPersonId || persons.length === 0" class="flex items-center justify-center h-full min-h-[600px]">
+    <div v-if="persons.length === 0" class="flex items-center justify-center h-full min-h-[600px]">
       <div class="text-center">
         <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
           <UIcon name="i-heroicons-user-group" class="w-8 h-8 text-amber-600" />
@@ -14,7 +14,7 @@
     <svg v-else ref="svgRef" class="w-full h-full" style="min-height: 600px" />
 
     <!-- Zoom controls -->
-    <div v-if="rootPersonId && persons.length > 0" class="absolute bottom-4 right-4 flex flex-col gap-2">
+    <div v-if="persons.length > 0" class="absolute bottom-4 right-4 flex flex-col gap-2">
       <UButton
         icon="i-heroicons-plus"
         size="xs"
@@ -97,9 +97,21 @@ function renderTree() {
   const svg = d3.select(svgRef.value)
   svg.selectAll('*').remove()
 
-  if (!props.rootPersonId || props.persons.length === 0) return
+  if (props.persons.length === 0) return
 
-  const treeData = buildTree(props.rootPersonId, props.persons, props.relationships)
+  // Auto-pick root: gunakan rootPersonId atau cari person tanpa orang tua
+  const childIds = new Set(
+    props.relationships
+      .filter(r => r.relationshipType === 'parent')
+      .map(r => r.relatedPersonId),
+  )
+  const effectiveRoot = props.rootPersonId
+    ?? props.persons.find(p => !childIds.has(p.id))?.id
+    ?? props.persons[0]?.id
+
+  if (!effectiveRoot) return
+
+  const treeData = buildTree(effectiveRoot, props.persons, props.relationships)
   if (!treeData) return
 
   // Define gradient
@@ -157,7 +169,7 @@ function renderTree() {
       emit('nodeClick', d.data.person.id)
     })
 
-  const isRoot = (d: d3.HierarchyPointNode<FamilyTreeNode>) => d.data.id === props.rootPersonId
+  const isRoot = (d: d3.HierarchyPointNode<FamilyTreeNode>) => d.data.id === effectiveRoot
 
   // Shadow filter
   const filter = defs.append('filter').attr('id', `node-shadow-${props.treeId}`)

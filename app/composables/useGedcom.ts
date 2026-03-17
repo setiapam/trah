@@ -133,6 +133,26 @@ export function useGedcom() {
         }
       }
 
+      // Set rootPersonId: cari person yang tidak punya orang tua (root ancestor)
+      // Fallback ke person pertama yang diimport
+      const importedPersonGedcomIds = result.persons.map(p => p.gedcomId)
+      const childGedcomIds = new Set(
+        result.relationships
+          .filter(r => r.type === 'parent')
+          .map(r => r.relatedPersonGedcomId),
+      )
+      const rootGedcomId = importedPersonGedcomIds.find(id => !childGedcomIds.has(id))
+        ?? importedPersonGedcomIds[0]
+      if (rootGedcomId) {
+        const rootDbId = gedcomToDbId.get(rootGedcomId)
+        if (rootDbId) {
+          try {
+            await getRepos().tree.update(tree.id, { rootPersonId: rootDbId })
+          }
+          catch { /* non-fatal */ }
+        }
+      }
+
       return {
         treeId: tree.id,
         personCount: gedcomToDbId.size,
