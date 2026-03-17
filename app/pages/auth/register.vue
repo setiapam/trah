@@ -31,18 +31,26 @@
         @close="clearError"
       />
 
-      <UForm :schema="schema" :state="state" @submit="onSubmit" class="space-y-4">
-        <UFormField label="Nama Lengkap" name="displayName" required>
+      <form class="space-y-4" novalidate @submit.prevent="onSubmit">
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+            Nama Lengkap <span class="text-red-500">*</span>
+          </label>
           <UInput
             v-model="state.displayName"
             placeholder="Contoh: Budi Santoso"
             size="lg"
             class="w-full"
             autocomplete="name"
+            :color="validationErrors.displayName ? 'error' : undefined"
           />
-        </UFormField>
+          <p v-if="validationErrors.displayName" class="text-xs text-red-500">{{ validationErrors.displayName }}</p>
+        </div>
 
-        <UFormField label="Email" name="email" required>
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+            Email <span class="text-red-500">*</span>
+          </label>
           <UInput
             v-model="state.email"
             type="email"
@@ -50,10 +58,15 @@
             size="lg"
             class="w-full"
             autocomplete="email"
+            :color="validationErrors.email ? 'error' : undefined"
           />
-        </UFormField>
+          <p v-if="validationErrors.email" class="text-xs text-red-500">{{ validationErrors.email }}</p>
+        </div>
 
-        <UFormField label="Kata Sandi" name="password" required>
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+            Kata Sandi <span class="text-red-500">*</span>
+          </label>
           <UInput
             v-model="state.password"
             type="password"
@@ -61,10 +74,15 @@
             size="lg"
             class="w-full"
             autocomplete="new-password"
+            :color="validationErrors.password ? 'error' : undefined"
           />
-        </UFormField>
+          <p v-if="validationErrors.password" class="text-xs text-red-500">{{ validationErrors.password }}</p>
+        </div>
 
-        <UFormField label="Konfirmasi Kata Sandi" name="confirmPassword" required>
+        <div class="space-y-1">
+          <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+            Konfirmasi Kata Sandi <span class="text-red-500">*</span>
+          </label>
           <UInput
             v-model="state.confirmPassword"
             type="password"
@@ -72,18 +90,21 @@
             size="lg"
             class="w-full"
             autocomplete="new-password"
+            :color="validationErrors.confirmPassword ? 'error' : undefined"
           />
-        </UFormField>
+          <p v-if="validationErrors.confirmPassword" class="text-xs text-red-500">{{ validationErrors.confirmPassword }}</p>
+        </div>
 
         <UButton
           type="submit"
+          color="primary"
           size="lg"
           class="w-full justify-center"
           :loading="loading"
         >
           Daftar
         </UButton>
-      </UForm>
+      </form>
 
       <div class="mt-4 trah-divider text-xs opacity-70">
         atau
@@ -112,7 +133,6 @@
 
 <script setup lang="ts">
 import { z } from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
 
 definePageMeta({ layout: 'auth' })
 
@@ -124,6 +144,8 @@ if (user.value) await navigateTo('/dashboard')
 const { loading, error, clearError, signUpWithEmail, signInWithGoogle } = useAuth()
 
 const registered = ref(false)
+const state = reactive({ displayName: '', email: '', password: '', confirmPassword: '' })
+const validationErrors = reactive({ displayName: '', email: '', password: '', confirmPassword: '' })
 
 const schema = z.object({
   displayName: z.string().min(2, 'Nama minimal 2 karakter'),
@@ -135,13 +157,30 @@ const schema = z.object({
   path: ['confirmPassword'],
 })
 
-type Schema = z.output<typeof schema>
+function validate(): boolean {
+  validationErrors.displayName = ''
+  validationErrors.email = ''
+  validationErrors.password = ''
+  validationErrors.confirmPassword = ''
 
-const state = reactive({ displayName: '', email: '', password: '', confirmPassword: '' })
+  const result = schema.safeParse(state)
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      const field = issue.path[0] as keyof typeof validationErrors
+      if (field && !validationErrors[field]) {
+        validationErrors[field] = issue.message
+      }
+    }
+    return false
+  }
+  return true
+}
 
-async function onSubmit(event: FormSubmitEvent<Schema>) {
-  const { email, password, displayName } = event.data
-  const result = await signUpWithEmail(email, password, displayName)
+async function onSubmit() {
+  clearError()
+  if (!validate()) return
+
+  const result = await signUpWithEmail(state.email, state.password, state.displayName)
   if (result?.needsEmailVerification) {
     registered.value = true
   }
