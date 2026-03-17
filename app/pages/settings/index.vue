@@ -1,17 +1,25 @@
 <template>
-  <div>
-    <h1 class="mb-6 text-2xl font-bold text-gray-900 dark:text-white">Pengaturan</h1>
+  <div class="max-w-2xl mx-auto space-y-6">
+    <div>
+      <p class="trah-ornament mb-1">Akun &amp; Data</p>
+      <h1 class="trah-title text-2xl font-bold text-stone-800 dark:text-stone-100">
+        Pengaturan
+      </h1>
+    </div>
+
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
         v-for="item in menuItems"
         :key="item.to"
         :to="item.to"
-        class="flex items-center gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-4 hover:border-primary-400 hover:shadow-sm transition-all"
+        class="card-emas ring-1 ring-amber-200/60 flex items-center gap-3 p-4 hover:ring-amber-400 hover:shadow-sm transition-all"
       >
-        <UIcon :name="item.icon" class="h-5 w-5 text-primary-600" />
+        <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+          <UIcon :name="item.icon" class="h-5 w-5 text-amber-600" />
+        </div>
         <div>
-          <p class="font-medium text-gray-900 dark:text-white text-sm">{{ item.label }}</p>
-          <p class="text-xs text-gray-400">{{ item.desc }}</p>
+          <p class="font-medium text-stone-800 dark:text-stone-100 text-sm">{{ item.label }}</p>
+          <p class="text-xs text-stone-400">{{ item.desc }}</p>
         </div>
       </NuxtLink>
     </div>
