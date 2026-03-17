@@ -74,7 +74,7 @@
         :persons="persons"
         :relationships="relationships"
         :tree-id="treeId"
-        @node-click="navigateTo(`/person/$event`)"
+        @node-click="(id) => navigateTo('/person/' + id)"
       />
     </div>
 
