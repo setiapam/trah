@@ -69,9 +69,9 @@
       Masuk dengan Google
     </UButton>
 
-    <p class="mt-6 text-center text-sm text-gray-500">
+    <p class="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
       Belum punya akun?
-      <NuxtLink to="/auth/register" class="text-primary-600 font-medium hover:underline">
+      <NuxtLink to="/auth/register" class="text-amber-700 dark:text-amber-400 font-medium hover:underline">
         Daftar sekarang
       </NuxtLink>
     </p>
@@ -80,6 +80,7 @@
 
 <script setup lang="ts">
 import { z } from 'zod'
+import type { FormSubmitEvent } from '@nuxt/ui'
 
 definePageMeta({ layout: 'auth' })
 
@@ -96,9 +97,11 @@ const schema = z.object({
   password: z.string().min(6, 'Kata sandi minimal 6 karakter'),
 })
 
+type Schema = z.output<typeof schema>
+
 const state = reactive({ email: '', password: '' })
 
-async function onSubmit() {
-  await signInWithEmail(state.email, state.password)
+async function onSubmit(event: FormSubmitEvent<Schema>) {
+  await signInWithEmail(event.data.email, event.data.password)
 }
 </script>

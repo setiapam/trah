@@ -100,9 +100,9 @@
         Daftar dengan Google
       </UButton>
 
-      <p class="mt-6 text-center text-sm text-gray-500">
+      <p class="mt-6 text-center text-sm text-stone-500 dark:text-stone-400">
         Sudah punya akun?
-        <NuxtLink to="/auth/login" class="text-primary-600 font-medium hover:underline">
+        <NuxtLink to="/auth/login" class="text-amber-700 dark:text-amber-400 font-medium hover:underline">
           Masuk
         </NuxtLink>
       </p>
@@ -112,6 +112,7 @@
 
 <script setup lang="ts">
 import { z } from 'zod'
+import type { FormSubmitEvent } from '@nuxt/ui'
 
 definePageMeta({ layout: 'auth' })
 
@@ -134,10 +135,13 @@ const schema = z.object({
   path: ['confirmPassword'],
 })
 
+type Schema = z.output<typeof schema>
+
 const state = reactive({ displayName: '', email: '', password: '', confirmPassword: '' })
 
-async function onSubmit() {
-  const result = await signUpWithEmail(state.email, state.password, state.displayName)
+async function onSubmit(event: FormSubmitEvent<Schema>) {
+  const { email, password, displayName } = event.data
+  const result = await signUpWithEmail(email, password, displayName)
   if (result?.needsEmailVerification) {
     registered.value = true
   }
