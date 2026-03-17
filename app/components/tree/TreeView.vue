@@ -361,7 +361,7 @@ onMounted(() => {
 watch(
   () => [props.rootPersonId, props.persons, props.relationships] as const,
   () => {
-    renderTree()
+    nextTick(() => renderTree())
   },
   { deep: true },
 )
