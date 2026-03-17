@@ -11,7 +11,7 @@ describe('Supabase Connection', () => {
     expect(SUPABASE_URL).toMatch(/^https:\/\/.+\.supabase\.co$/)
   })
 
-  it('can connect to Supabase', async () => {
+  it('can connect to Supabase', { timeout: 15000 }, async () => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
     // Coba akses tabel profiles — sukses berarti koneksi dan RLS berfungsi
     const { error } = await supabase.from('profiles').select('count').limit(1)
@@ -27,7 +27,7 @@ describe('Supabase Connection', () => {
     }
   })
 
-  it('can connect to Supabase auth', async () => {
+  it('can connect to Supabase auth', { timeout: 15000 }, async () => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
     const { data, error } = await supabase.auth.getSession()
     // Tanpa login, session harus null tapi tidak error koneksi
