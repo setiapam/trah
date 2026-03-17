@@ -17,7 +17,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "db:types": "dotenv -e .env -- supabase gen types typescript --project-id arkaukycsjwfzxaifbxz --schema public > app/types/database.types.ts",
-    "db:migrate": "dotenv -e .env -- supabase db push --project-ref arkaukycsjwfzxaifbxz"
+    "db:migrate": "dotenv -e .env -- supabase db push --linked"
   },
   "dependencies": {
     "@nuxt/ui": "^4.5.1",
