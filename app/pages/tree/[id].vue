@@ -257,6 +257,13 @@ function personMenuItems(person: Person) {
 
 function onPersonSaved(person: Person) {
   showPersonForm.value = false
+  const idx = persons.value.findIndex(p => p.id === person.id)
+  if (idx !== -1) {
+    persons.value[idx] = person
+  }
+  else {
+    persons.value.push(person)
+  }
   toast.add({ title: `${getFullName(person)} berhasil disimpan`, color: 'success' })
 }
 
