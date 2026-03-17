@@ -224,6 +224,8 @@
 import { getFullName, getAge } from '../../../domain/entities/person'
 import type { Person } from '../../../domain/entities/person'
 import type { Relationship } from '../../../domain/entities/relationship'
+import PersonPersonForm from '../../components/person/PersonForm.vue'
+import PersonRelationshipSelector from '../../components/person/RelationshipSelector.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -250,8 +252,7 @@ onMounted(async () => {
     // Load all persons for the relationship selector
     const nuxtApp = useNuxtApp()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const repos = nuxtApp.$repos as any
-    treeParsons.value = await repos.person.getByTree(currentPerson.value.treeId)
+    treeParsons.value = await ((nuxtApp as Record<string, unknown>).$repos as any).person.getByTree(currentPerson.value.treeId)
   }
 })
 
