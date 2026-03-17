@@ -1,15 +1,36 @@
 <template>
-  <div class="max-w-lg space-y-6">
-    <div class="mb-6">
+  <div class="max-w-2xl mx-auto space-y-8">
+    <!-- Back + heading -->
+    <div class="flex items-center gap-3">
+      <UButton
+        to="/settings"
+        variant="ghost"
+        color="neutral"
+        size="sm"
+        icon="i-heroicons-arrow-left"
+        class="text-stone-600 hover:text-stone-800"
+      >
+        Pengaturan
+      </UButton>
+    </div>
+
+    <div>
       <p class="trah-ornament mb-1">Akun</p>
-      <h1 class="trah-title font-javanese text-2xl font-bold text-stone-800 dark:text-stone-100">Profil Saya</h1>
-      <p class="mt-1 text-sm text-stone-500">Kelola informasi akun Anda</p>
+      <h1 class="trah-title text-2xl font-bold text-stone-800 dark:text-stone-100">
+        Profil Saya
+      </h1>
+      <p class="mt-2 text-stone-500 dark:text-stone-400 text-sm">
+        Kelola nama tampilan dan foto akun Anda.
+      </p>
     </div>
 
     <!-- User ID section -->
-    <div class="card-emas bg-white dark:bg-stone-900 rounded-xl p-5 ring-1 ring-amber-200/60 space-y-2">
-      <p class="text-sm font-medium text-stone-700 dark:text-stone-300 font-javanese">User ID Saya</p>
-      <p class="text-xs text-stone-500 mb-2">
+    <div class="card-emas ring-1 ring-amber-200/60 p-6 space-y-3">
+      <h3 class="font-javanese font-semibold text-stone-700 dark:text-stone-300 text-sm flex items-center gap-2">
+        <UIcon name="i-heroicons-identification" class="h-4 w-4 text-amber-500" />
+        User ID Saya
+      </h3>
+      <p class="text-xs text-stone-500 dark:text-stone-400">
         Bagikan ID ini ke orang yang ingin mengundang Anda ke silsilah mereka.
       </p>
       <div class="flex items-center gap-2">
@@ -22,26 +43,29 @@
       </div>
     </div>
 
-    <UCard v-if="profile">
+    <!-- Loading -->
+    <div v-if="loading && !profile" class="flex justify-center py-12">
+      <USkeleton class="h-64 w-full rounded-xl" />
+    </div>
+
+    <!-- Profile form -->
+    <div v-else-if="profile" class="card-emas ring-1 ring-amber-200/60 p-6 space-y-5">
       <UAlert
         v-if="error"
         color="error"
         variant="soft"
         :description="error"
-        class="mb-4"
         icon="i-heroicons-exclamation-circle"
       />
-
       <UAlert
         v-if="saved"
         color="success"
         variant="soft"
         description="Profil berhasil diperbarui"
-        class="mb-4"
         icon="i-heroicons-check-circle"
       />
 
-      <UForm :schema="schema" :state="state" @submit="onSubmit" class="space-y-5">
+      <UForm :schema="schema" :state="state" class="space-y-5" @submit="onSubmit">
         <!-- Avatar -->
         <div class="flex items-center gap-4">
           <UAvatar
@@ -51,9 +75,7 @@
           />
           <div>
             <label class="cursor-pointer">
-              <UButton variant="outline" size="sm" as="span">
-                Ganti Foto
-              </UButton>
+              <UButton variant="outline" size="sm" as="span">Ganti Foto</UButton>
               <input
                 type="file"
                 class="hidden"
@@ -61,7 +83,7 @@
                 @change="onAvatarChange"
               />
             </label>
-            <p class="mt-1 text-xs text-gray-400">JPG, PNG, WebP. Maks 2MB</p>
+            <p class="mt-1 text-xs text-stone-400">JPG, PNG, WebP. Maks 2MB</p>
           </div>
         </div>
 
@@ -74,13 +96,9 @@
         </UFormField>
 
         <div class="flex justify-end">
-          <UButton type="submit" :loading="loading">Simpan Perubahan</UButton>
+          <UButton type="submit" color="primary" :loading="loading">Simpan Perubahan</UButton>
         </div>
       </UForm>
-    </UCard>
-
-    <div v-else-if="loading" class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="h-6 w-6 animate-spin text-stone-400" />
     </div>
   </div>
 </template>
