@@ -143,6 +143,19 @@
                   />
                 </div>
               </div>
+              <!-- Siblings -->
+              <div v-if="siblingPersons.length > 0">
+                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Saudara Kandung</p>
+                <div class="space-y-2">
+                  <PersonRelationItem
+                    v-for="p in siblingPersons"
+                    :key="p.id"
+                    :person="p"
+                    relationship-id=""
+                    :show-delete="false"
+                  />
+                </div>
+              </div>
             </div>
           </UCard>
         </div>
@@ -192,6 +205,10 @@
                 <dt class="text-sm text-gray-500 dark:text-gray-400">Anak</dt>
                 <dd class="text-sm font-medium text-gray-900 dark:text-white">{{ childPersons.length }}</dd>
               </div>
+              <div class="flex justify-between">
+                <dt class="text-sm text-gray-500 dark:text-gray-400">Saudara kandung</dt>
+                <dd class="text-sm font-medium text-gray-900 dark:text-white">{{ siblingPersons.length }}</dd>
+              </div>
             </dl>
           </UCard>
         </div>
@@ -233,7 +250,7 @@ const route = useRoute()
 const personId = route.params.id as string
 
 const { currentPerson, loading: personLoading, fetchPerson, updatePerson } = usePerson()
-const { relationships, loading: relLoading, fetchRelationships, createRelationship, deleteRelationship, getParents, getChildren, getSpouses } = useRelationship()
+const { relationships, loading: relLoading, fetchRelationships, createRelationship, deleteRelationship, getParents, getChildren, getSpouses, getSiblings } = useRelationship()
 
 const showEditForm = ref(false)
 const showRelSelector = ref(false)
@@ -331,6 +348,19 @@ const childPersons = computed(() => {
       return { person: getPersonById(id), relId: rel?.id ?? '' }
     })
     .filter(x => x.person) as { person: Person, relId: string }[]
+})
+
+const siblingPersons = computed(() => {
+  if (!currentPerson.value) return []
+  return getSiblings(currentPerson.value.id)
+    .map(id => getPersonById(id))
+    .filter((p): p is Person => !!p)
+    .sort((a, b) => {
+      if (!a.birthDate && !b.birthDate) return 0
+      if (!a.birthDate) return 1
+      if (!b.birthDate) return -1
+      return new Date(a.birthDate).getTime() - new Date(b.birthDate).getTime()
+    })
 })
 
 // --- Methods ---

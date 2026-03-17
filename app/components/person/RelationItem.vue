@@ -18,6 +18,7 @@
       </p>
     </div>
     <UButton
+      v-if="showDelete !== false"
       icon="i-heroicons-x-mark"
       color="neutral"
       variant="ghost"
@@ -36,6 +37,7 @@ defineProps<{
   person: Person
   relationshipId: string
   marriageDate?: string | null
+  showDelete?: boolean
 }>()
 
 defineEmits<{

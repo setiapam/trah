@@ -86,6 +86,18 @@ export function useRelationship() {
       .map(r => r.personId === personId ? r.relatedPersonId : r.personId)
   }
 
+  function getSiblings(personId: string): string[] {
+    const parentIds = getParents(personId)
+    if (parentIds.length === 0) return []
+    const siblingIds = new Set<string>()
+    for (const parentId of parentIds) {
+      for (const childId of getChildren(parentId)) {
+        if (childId !== personId) siblingIds.add(childId)
+      }
+    }
+    return Array.from(siblingIds)
+  }
+
   return {
     relationships,
     loading,
@@ -97,5 +109,6 @@ export function useRelationship() {
     getParents,
     getChildren,
     getSpouses,
+    getSiblings,
   }
 }
