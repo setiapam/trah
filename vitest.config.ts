@@ -9,6 +9,7 @@ export default defineVitestConfig({
   test: {
     environment: 'nuxt',
     include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts'],
+    exclude: ['tests/e2e/**', 'node_modules', '.nuxt'],
     setupFiles: ['tests/setup.ts'],
     coverage: {
       provider: 'v8',
