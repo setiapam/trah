@@ -83,7 +83,7 @@ import { z } from 'zod'
 
 definePageMeta({ layout: 'auth' })
 
-useHead({ title: 'Masuk — Trah' })
+useHead({ title: 'Masuk — Trah', meta: [{ name: 'robots', content: 'noindex' }] })
 
 // Redirect jika sudah login
 const user = useSupabaseUser()

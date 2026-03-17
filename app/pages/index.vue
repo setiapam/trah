@@ -62,8 +62,8 @@
 
       <!-- Bottom wave ornament -->
       <div class="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full">
-          <path d="M0 60 C360 0 1080 0 1440 60 L1440 60 L0 60Z" fill="#fffbeb" />
+        <svg viewBox="0 0 1440 60" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full" aria-hidden="true">
+          <path d="M0 60 C360 0 1080 0 1440 60 L1440 60 L0 60Z" class="fill-amber-50 dark:fill-stone-950" />
         </svg>
       </div>
     </section>
@@ -101,11 +101,33 @@
       </div>
     </section>
 
+    <!-- How it works section -->
+    <section class="bg-white dark:bg-stone-900 py-20 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-4xl mx-auto">
+        <div class="text-center mb-14">
+          <span class="trah-ornament justify-center mb-3 text-amber-700/70">Cara Kerja</span>
+          <h2 class="trah-title font-javanese text-3xl sm:text-4xl font-bold text-stone-800 dark:text-stone-100 mb-4">
+            Tiga langkah mudah
+          </h2>
+        </div>
+
+        <div class="grid sm:grid-cols-3 gap-8">
+          <div v-for="step in steps" :key="step.number" class="text-center">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center mx-auto mb-4 shadow-md shadow-amber-200 dark:shadow-amber-900/40">
+              <span class="font-javanese font-bold text-xl text-white">{{ step.number }}</span>
+            </div>
+            <h3 class="font-javanese font-semibold text-stone-800 dark:text-stone-100 mb-2">{{ step.title }}</h3>
+            <p class="text-sm text-stone-500 dark:text-stone-400 leading-relaxed">{{ step.desc }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Quote / Tagline Section -->
     <section class="bg-gradient-to-br from-stone-800 to-amber-950 py-20 px-4 text-center relative overflow-hidden">
-      <div class="absolute inset-0 bg-parang opacity-30" />
+      <div class="absolute inset-0 bg-parang opacity-30" aria-hidden="true" />
       <div class="relative z-10 max-w-3xl mx-auto">
-        <div class="flex items-center justify-center gap-4 mb-8">
+        <div class="flex items-center justify-center gap-4 mb-8" aria-hidden="true">
           <div class="h-px w-12 bg-amber-500/50" />
           <span class="text-amber-500/60">◆ ◆ ◆</span>
           <div class="h-px w-12 bg-amber-500/50" />
@@ -120,32 +142,49 @@
     </section>
 
     <!-- CTA Section -->
-    <section class="bg-amber-50 py-20 px-4 text-center bg-kawung">
+    <section class="bg-amber-50 dark:bg-stone-950 py-20 px-4 text-center bg-kawung">
       <div class="max-w-2xl mx-auto">
-        <h2 class="font-javanese text-3xl sm:text-4xl font-bold text-stone-800 mb-4">
-          Mulai hari ini
+        <p class="trah-ornament justify-center mb-3 text-amber-700/70">Mulai Sekarang</p>
+        <h2 class="font-javanese text-3xl sm:text-4xl font-bold text-stone-800 dark:text-stone-100 mb-4">
+          Jaga silsilah keluarga Anda
         </h2>
-        <p class="text-stone-600 mb-8 text-lg">
-          Bergabung dengan keluarga-keluarga yang sudah melestarikan silsilah mereka bersama Trah.
+        <p class="text-stone-600 dark:text-stone-400 mb-8 text-lg leading-relaxed">
+          Gratis selamanya. Tidak perlu kartu kredit.
+          Mulai catat silsilah keluarga Anda hari ini.
         </p>
-        <UButton
-          to="/auth/register"
-          size="xl"
-          class="px-10"
-        >
-          Daftar Gratis
-        </UButton>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <UButton to="/auth/register" size="xl" color="primary" class="px-10 font-semibold">
+            Daftar Gratis
+          </UButton>
+          <UButton to="/auth/login" size="xl" color="neutral" variant="outline" class="px-10">
+            Sudah punya akun? Masuk
+          </UButton>
+        </div>
       </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-stone-900 text-stone-400 py-10 px-4 text-center border-t border-stone-800">
-      <div class="trah-ornament justify-center mb-4 text-amber-600/60">
-        Trah — Nguri-uri Trah, Njaga Sejarah
+    <footer class="bg-stone-900 text-stone-400 py-12 px-4 border-t border-stone-800">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+          <div class="text-center md:text-left">
+            <span class="trah-logo text-2xl">Trah</span>
+            <p class="text-xs text-stone-500 mt-1 font-javanese italic">Nguri-uri Trah, Njaga Sejarah</p>
+          </div>
+          <nav class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm" aria-label="Footer navigation">
+            <NuxtLink to="/auth/register" class="hover:text-amber-400 transition-colors">Daftar</NuxtLink>
+            <NuxtLink to="/auth/login" class="hover:text-amber-400 transition-colors">Masuk</NuxtLink>
+            <NuxtLink to="/dashboard" class="hover:text-amber-400 transition-colors">Dashboard</NuxtLink>
+            <NuxtLink to="/settings/import" class="hover:text-amber-400 transition-colors">Import Data</NuxtLink>
+          </nav>
+        </div>
+        <div class="trah-divider opacity-20 mb-6">
+          <span class="text-xs">◆</span>
+        </div>
+        <p class="text-xs text-stone-600 text-center">
+          © {{ new Date().getFullYear() }} Trah. Dibuat dengan ♥ untuk keluarga Indonesia.
+        </p>
       </div>
-      <p class="text-xs text-stone-600">
-        © {{ new Date().getFullYear() }} Trah. Dibuat dengan ♥ untuk keluarga Indonesia.
-      </p>
     </footer>
   </div>
 </template>
@@ -154,12 +193,36 @@
 useHead({
   title: 'Trah — Nguri-uri Trah, Njaga Sejarah',
   meta: [
-    {
-      name: 'description',
-      content: 'Aplikasi web pencatatan silsilah keluarga. Simpan dan visualisasikan pohon keluarga Anda secara digital.',
-    },
+    { name: 'description', content: 'Aplikasi web pencatatan silsilah keluarga. Simpan, kelola, dan visualisasikan pohon keluarga Anda secara digital. Gratis, aman, dan mudah digunakan.' },
+    { property: 'og:title', content: 'Trah — Nguri-uri Trah, Njaga Sejarah' },
+    { property: 'og:description', content: 'Lestarikan warisan leluhur secara digital. Catat anggota keluarga, visualisasikan silsilah, dan kolaborasikan bersama keluarga.' },
+    { property: 'og:type', content: 'website' },
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: 'Trah — Aplikasi Silsilah Keluarga' },
+    { name: 'twitter:description', content: 'Lestarikan warisan leluhur secara digital. Visualisasi pohon keluarga interaktif, ekspor GEDCOM, kolaborasi keluarga.' },
+  ],
+  link: [
+    { rel: 'canonical', href: 'https://trah.app/' },
   ],
 })
+
+const steps = [
+  {
+    number: '1',
+    title: 'Buat Trah',
+    desc: 'Buat akun gratis dan mulai trah baru. Beri nama, tambahkan deskripsi singkat tentang keluarga Anda.',
+  },
+  {
+    number: '2',
+    title: 'Tambah Anggota',
+    desc: 'Catat setiap anggota keluarga lengkap dengan foto, tanggal lahir, dan relasinya dalam keluarga.',
+  },
+  {
+    number: '3',
+    title: 'Lihat & Bagikan',
+    desc: 'Visualisasikan pohon keluarga interaktif dan undang anggota keluarga lain untuk berkolaborasi.',
+  },
+]
 
 const features = [
   {

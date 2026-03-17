@@ -115,7 +115,7 @@ import { z } from 'zod'
 
 definePageMeta({ layout: 'auth' })
 
-useHead({ title: 'Daftar — Trah' })
+useHead({ title: 'Daftar — Trah', meta: [{ name: 'robots', content: 'noindex' }] })
 
 const user = useSupabaseUser()
 if (user.value) await navigateTo('/dashboard')

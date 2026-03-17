@@ -119,7 +119,7 @@
 import type { Tree } from '../../../domain/entities/tree'
 
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'Dashboard — Trah' })
+useHead({ title: 'Dashboard — Trah', meta: [{ name: 'robots', content: 'noindex' }] })
 
 const { profile, fetchProfile } = useProfile()
 const { trees, loading, error, fetchTrees, updateTree, deleteTree } = useTree()
