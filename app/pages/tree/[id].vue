@@ -131,9 +131,8 @@
 
     <!-- PersonForm slideover -->
     <PersonPersonForm
-      v-if="currentTree"
       :open="showPersonForm"
-      :tree-id="currentTree.id"
+      :tree-id="treeId"
       :person="editingPerson"
       @close="showPersonForm = false"
       @saved="onPersonSaved"
@@ -175,7 +174,7 @@ const toast = useToast()
 
 const nuxtApp = useNuxtApp()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const repos = nuxtApp.$repos as any
+function getRepos(): any { return (nuxtApp as Record<string, unknown>).$repos }
 
 const currentTree = ref<import('../../../domain/entities/tree').Tree | null>(null)
 const { persons, loading: personLoading, error, fetchPersons, deletePerson } = usePerson()
@@ -193,7 +192,7 @@ useHead(() => ({
 
 onMounted(async () => {
   const [tree] = await Promise.all([
-    repos.tree.getById(treeId),
+    getRepos().tree.getById(treeId),
     fetchPersons(treeId),
     fetchRelationships(treeId),
   ])
