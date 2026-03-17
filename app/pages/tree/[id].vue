@@ -14,13 +14,20 @@
           {{ currentTree.description }}
         </p>
       </div>
-      <UButton
-        v-if="currentTree"
-        icon="i-heroicons-user-plus"
-        @click="openAddPerson"
-      >
-        Tambah Anggota
-      </UButton>
+      <div class="flex gap-2 flex-shrink-0">
+        <UButton
+          v-if="currentTree && isOwner"
+          icon="i-heroicons-share"
+          color="neutral"
+          variant="outline"
+          @click="showSharePanel = true"
+        >
+          Bagikan
+        </UButton>
+        <UButton v-if="currentTree" icon="i-heroicons-user-plus" @click="openAddPerson">
+          Tambah Anggota
+        </UButton>
+      </div>
     </div>
 
     <UAlert v-if="error" color="error" :title="error" class="mb-4" />
@@ -167,6 +174,15 @@
     </div>
     </template>
 
+    <!-- ShareTree slideover -->
+    <ShareTreeComponent
+      v-if="currentTree"
+      :open="showSharePanel"
+      :tree-id="treeId"
+      :owner-id="currentTree.ownerId"
+      @close="showSharePanel = false"
+    />
+
     <!-- PersonForm slideover -->
     <PersonPersonForm
       :open="showPersonForm"
@@ -205,6 +221,7 @@ import type { Person } from '../../../domain/entities/person'
 import { getFullName } from '../../../domain/entities/person'
 import PersonPersonForm from '../../components/person/PersonForm.vue'
 import TreeTreeView from '../../components/tree/TreeView.vue'
+import ShareTreeComponent from '../../components/tree/ShareTree.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -220,6 +237,10 @@ const currentTree = ref<import('../../../domain/entities/tree').Tree | null>(nul
 const { persons, loading: personLoading, error, fetchPersons, deletePerson } = usePerson()
 const { relationships, fetchRelationships } = useRelationship()
 
+const session = useSupabaseSession()
+const isOwner = computed(() => currentTree.value?.ownerId === session.value?.user?.id)
+
+const showSharePanel = ref(false)
 const view = ref<'tree' | 'list'>('tree')
 const searchQuery = ref('')
 const showPersonForm = ref(false)

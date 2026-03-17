@@ -32,6 +32,7 @@ useHead({ title: 'Pengaturan — Trah' })
 
 const menuItems = [
   { to: '/settings/profile', icon: 'i-heroicons-user-circle', label: 'Profil', desc: 'Nama dan foto akun' },
+  { to: '/settings/invitations', icon: 'i-heroicons-envelope', label: 'Undangan Masuk', desc: 'Kolaborasi silsilah' },
   { to: '/settings/import', icon: 'i-heroicons-arrow-up-tray', label: 'Import Data', desc: 'GEDCOM & JSON' },
   { to: '/settings/export', icon: 'i-heroicons-arrow-down-tray', label: 'Export Data', desc: 'GEDCOM & JSON' },
 ]

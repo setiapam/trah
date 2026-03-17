@@ -1,8 +1,25 @@
 <template>
-  <div class="max-w-lg">
+  <div class="max-w-lg space-y-6">
     <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Profil Saya</h1>
-      <p class="mt-1 text-sm text-gray-500">Kelola informasi akun Anda</p>
+      <p class="trah-ornament mb-1">Akun</p>
+      <h1 class="trah-title font-javanese text-2xl font-bold text-stone-800 dark:text-stone-100">Profil Saya</h1>
+      <p class="mt-1 text-sm text-stone-500">Kelola informasi akun Anda</p>
+    </div>
+
+    <!-- User ID section -->
+    <div class="card-emas bg-white dark:bg-stone-900 rounded-xl p-5 ring-1 ring-amber-200/60 space-y-2">
+      <p class="text-sm font-medium text-stone-700 dark:text-stone-300 font-javanese">User ID Saya</p>
+      <p class="text-xs text-stone-500 mb-2">
+        Bagikan ID ini ke orang yang ingin mengundang Anda ke silsilah mereka.
+      </p>
+      <div class="flex items-center gap-2">
+        <code class="flex-1 bg-stone-100 dark:bg-stone-800 rounded-lg px-3 py-2 text-xs font-mono text-stone-700 dark:text-stone-300 truncate">
+          {{ user?.id ?? '-' }}
+        </code>
+        <UButton icon="i-heroicons-clipboard" size="xs" color="neutral" variant="outline" @click="copyUserId">
+          Salin
+        </UButton>
+      </div>
     </div>
 
     <UCard v-if="profile">
@@ -63,7 +80,7 @@
     </UCard>
 
     <div v-else-if="loading" class="flex justify-center py-12">
-      <UIcon name="i-heroicons-arrow-path" class="h-6 w-6 animate-spin text-gray-400" />
+      <UIcon name="i-heroicons-arrow-path" class="h-6 w-6 animate-spin text-stone-400" />
     </div>
   </div>
 </template>
@@ -76,6 +93,7 @@ useHead({ title: 'Profil — Trah' })
 
 const { user } = useAuth()
 const { profile, loading, error, fetchProfile, updateProfile, uploadAvatar } = useProfile()
+const toast = useToast()
 
 const saved = ref(false)
 const avatarPreview = ref<string | null>(null)
@@ -91,6 +109,14 @@ onMounted(async () => {
   await fetchProfile()
   if (profile.value) state.displayName = profile.value.displayName
 })
+
+function copyUserId(): void {
+  navigator.clipboard.writeText(user.value?.id ?? '').then(() => {
+    toast.add({ title: 'User ID disalin', color: 'success' })
+  }).catch(() => {
+    toast.add({ title: 'Gagal menyalin', color: 'error' })
+  })
+}
 
 function onAvatarChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
