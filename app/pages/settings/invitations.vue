@@ -114,6 +114,7 @@ const session = useSupabaseSession()
 const toast = useToast()
 const { fetchMyInvitations, acceptInvitation, declineInvitation } = useTreeMembers()
 const { copy, isSupported: clipboardSupported } = useClipboard()
+const { refresh: refreshInvitationCount } = useInvitationCount()
 
 const loading = ref(false)
 const invitations = ref<PendingInvitation[]>([])
@@ -136,6 +137,7 @@ async function doAccept(id: string): Promise<void> {
     const ok = await acceptInvitation(id)
     if (ok) {
       invitations.value = invitations.value.filter(i => i.id !== id)
+      refreshInvitationCount()
       toast.add({ title: 'Undangan diterima', color: 'success' })
     }
     else {
@@ -153,6 +155,7 @@ async function doDecline(id: string): Promise<void> {
     const ok = await declineInvitation(id)
     if (ok) {
       invitations.value = invitations.value.filter(i => i.id !== id)
+      refreshInvitationCount()
       toast.add({ title: 'Undangan ditolak', color: 'neutral' })
     }
     else {

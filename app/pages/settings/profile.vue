@@ -35,7 +35,7 @@
       </p>
       <div class="flex items-center gap-2">
         <code class="flex-1 bg-stone-100 dark:bg-stone-800 rounded-lg px-3 py-2 text-xs font-mono text-stone-700 dark:text-stone-300 truncate">
-          {{ user?.id ?? '-' }}
+          {{ session?.user?.id ?? '-' }}
         </code>
         <UButton icon="i-heroicons-clipboard" size="xs" color="neutral" variant="outline" @click="copyUserId">
           Salin
@@ -110,6 +110,7 @@ definePageMeta({ middleware: 'auth' })
 useHead({ title: 'Profil — Trah' })
 
 const { user } = useAuth()
+const session = useSupabaseSession()
 const { profile, loading, error, fetchProfile, updateProfile, uploadAvatar } = useProfile()
 const toast = useToast()
 const { copy, isSupported: clipboardSupported } = useClipboard()
@@ -130,7 +131,7 @@ onMounted(async () => {
 })
 
 async function copyUserId(): Promise<void> {
-  const id = user.value?.id ?? ''
+  const id = session.value?.user?.id ?? ''
   if (!id) return
   try {
     if (clipboardSupported.value) {

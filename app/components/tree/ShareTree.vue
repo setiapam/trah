@@ -101,7 +101,8 @@ const props = defineProps<{
 defineEmits<{ close: [] }>()
 
 const session = useSupabaseSession()
-const { members, loading, fetchMembers, inviteMember, removeMember } = useTreeMembers()
+const supabase = useSupabaseClient()
+const { members, loading, error: memberError, fetchMembers, inviteMember, removeMember } = useTreeMembers()
 
 const isOwner = computed(() => session.value?.user?.id === props.ownerId)
 
@@ -121,19 +122,55 @@ watch(() => props.open, (val) => {
   if (val) fetchMembers(props.treeId)
 })
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 async function doInvite(): Promise<void> {
   inviteError.value = null
   inviteSuccess.value = null
+  const uid = inviteUserId.value.trim()
+
+  if (!UUID_REGEX.test(uid)) {
+    inviteError.value = 'Format User ID tidak valid. Pastikan menyalin UUID lengkap.'
+    return
+  }
+
+  if (uid === session.value?.user?.id) {
+    inviteError.value = 'Tidak bisa mengundang diri sendiri.'
+    return
+  }
+
   inviting.value = true
   try {
-    const ok = await inviteMember(props.treeId, inviteUserId.value.trim(), inviteRole.value as MemberRole)
+    // Check if user exists in profiles
+    const { data: profile, error: profileErr } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', uid)
+      .maybeSingle()
+
+    if (profileErr) {
+      inviteError.value = `Error: ${profileErr.message}`
+      return
+    }
+    if (!profile) {
+      inviteError.value = 'User dengan ID tersebut tidak ditemukan. Pastikan User ID sudah benar.'
+      return
+    }
+
+    const ok = await inviteMember(props.treeId, uid, inviteRole.value as MemberRole)
     if (ok) {
       inviteSuccess.value = 'Undangan berhasil dikirim'
       inviteUserId.value = ''
       await fetchMembers(props.treeId)
     }
     else {
-      inviteError.value = 'Gagal mengundang. Periksa User ID dan coba lagi.'
+      const msg = memberError.value
+      if (msg?.includes('duplicate') || msg?.includes('unique')) {
+        inviteError.value = 'User ini sudah diundang atau sudah menjadi anggota.'
+      }
+      else {
+        inviteError.value = msg ? `Gagal mengundang: ${msg}` : 'Gagal mengundang. Periksa User ID dan coba lagi.'
+      }
     }
   }
   finally {

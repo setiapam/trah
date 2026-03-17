@@ -17,14 +17,14 @@
       <div class="flex gap-2 flex-shrink-0">
         <UButton
           v-if="currentTree && isOwner"
-          icon="i-heroicons-share"
+          icon="i-heroicons-users"
           color="neutral"
           variant="outline"
-          @click="showSharePanel = true"
+          :to="`/tree/${treeId}/members`"
         >
-          Bagikan
+          Anggota
         </UButton>
-        <UButton v-if="currentTree" icon="i-heroicons-user-plus" @click="openAddPerson">
+        <UButton v-if="currentTree && canEdit" icon="i-heroicons-user-plus" @click="openAddPerson">
           Tambah Anggota
         </UButton>
       </div>
@@ -108,7 +108,7 @@
           <UIcon name="i-heroicons-users" class="w-8 h-8 text-amber-600" />
         </div>
         <p class="font-javanese text-stone-600 mb-3">Belum ada anggota keluarga.</p>
-        <UButton icon="i-heroicons-user-plus" @click="openAddPerson">Tambah Anggota Pertama</UButton>
+        <UButton v-if="canEdit" icon="i-heroicons-user-plus" @click="openAddPerson">Tambah Anggota Pertama</UButton>
       </UCard>
 
       <!-- No search results -->
@@ -219,9 +219,9 @@
 <script setup lang="ts">
 import type { Person } from '../../../domain/entities/person'
 import { getFullName } from '../../../domain/entities/person'
-import PersonPersonForm from '../../components/person/PersonForm.vue'
-import TreeTreeView from '../../components/tree/TreeView.vue'
-import ShareTreeComponent from '../../components/tree/ShareTree.vue'
+import PersonPersonForm from '../../../components/person/PersonForm.vue'
+import TreeTreeView from '../../../components/tree/TreeView.vue'
+import ShareTreeComponent from '../../../components/tree/ShareTree.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -238,7 +238,10 @@ const { persons, loading: personLoading, error, fetchPersons, deletePerson } = u
 const { relationships, fetchRelationships } = useRelationship()
 
 const session = useSupabaseSession()
+const supabase = useSupabaseClient()
 const isOwner = computed(() => currentTree.value?.ownerId === session.value?.user?.id)
+const userRole = ref<'owner' | 'editor' | 'viewer' | null>(null)
+const canEdit = computed(() => userRole.value === 'owner' || userRole.value === 'editor')
 
 const showSharePanel = ref(false)
 const view = ref<'tree' | 'list'>('tree')
@@ -259,6 +262,20 @@ onMounted(async () => {
     fetchRelationships(treeId),
   ])
   currentTree.value = tree
+
+  if (tree?.ownerId === session.value?.user?.id) {
+    userRole.value = 'owner'
+  }
+  else {
+    const { data } = await supabase
+      .from('tree_members')
+      .select('role')
+      .eq('tree_id', treeId)
+      .eq('user_id', session.value?.user?.id ?? '')
+      .not('accepted_at', 'is', null)
+      .maybeSingle()
+    userRole.value = (data?.role as 'editor' | 'viewer') ?? null
+  }
 })
 
 const filteredPersons = computed(() => {
@@ -291,13 +308,15 @@ function openAddPerson() {
 }
 
 function personMenuItems(person: Person) {
-  return [
+  const items: ReturnType<typeof personMenuItems> = [
     [{
       label: 'Lihat Detail',
       icon: 'i-heroicons-eye',
       onSelect: () => navigateTo(`/person/${person.id}`),
     }],
-    [{
+  ]
+  if (canEdit.value) {
+    items.push([{
       label: 'Edit',
       icon: 'i-heroicons-pencil',
       onSelect: () => {
@@ -312,8 +331,9 @@ function personMenuItems(person: Person) {
         deletePersonTarget.value = person
         showDeletePersonModal.value = true
       },
-    }],
-  ]
+    }])
+  }
+  return items
 }
 
 function onPersonSaved(person: Person) {

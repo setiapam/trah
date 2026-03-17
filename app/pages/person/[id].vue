@@ -50,7 +50,7 @@
             </div>
           </div>
         </div>
-        <div class="flex gap-2 flex-shrink-0">
+        <div v-if="canEdit" class="flex gap-2 flex-shrink-0">
           <UButton icon="i-heroicons-pencil" color="neutral" variant="outline" @click="showEditForm = true">
             Edit
           </UButton>
@@ -88,7 +88,7 @@
             <template #header>
               <div class="flex items-center justify-between">
                 <h2 class="font-semibold text-gray-900 dark:text-white">Relasi Keluarga</h2>
-                <UButton icon="i-heroicons-plus" size="sm" variant="outline" @click="showRelSelector = true">
+                <UButton v-if="canEdit" icon="i-heroicons-plus" size="sm" variant="outline" @click="showRelSelector = true">
                   Tambah Relasi
                 </UButton>
               </div>
@@ -249,11 +249,14 @@ definePageMeta({ middleware: 'auth' })
 const route = useRoute()
 const personId = route.params.id as string
 
+const session = useSupabaseSession()
+const supabase = useSupabaseClient()
 const { currentPerson, loading: personLoading, fetchPerson, updatePerson } = usePerson()
 const { relationships, loading: relLoading, fetchRelationships, createRelationship, deleteRelationship, getParents, getChildren, getSpouses, getSiblings } = useRelationship()
 
 const showEditForm = ref(false)
 const showRelSelector = ref(false)
+const canEdit = ref(false)
 
 // All persons in the tree (for relationship selector)
 const treeParsons = ref<Person[]>([])
@@ -265,11 +268,29 @@ useHead(() => ({
 onMounted(async () => {
   await fetchPerson(personId)
   if (currentPerson.value) {
-    await fetchRelationships(currentPerson.value.treeId)
+    const treeId = currentPerson.value.treeId
+    await fetchRelationships(treeId)
+
     // Load all persons for the relationship selector
     const nuxtApp = useNuxtApp()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    treeParsons.value = await ((nuxtApp as Record<string, unknown>).$repos as any).person.getByTree(currentPerson.value.treeId)
+    treeParsons.value = await ((nuxtApp as Record<string, unknown>).$repos as any).person.getByTree(treeId)
+
+    // Determine edit permission
+    const { data: tree } = await supabase.from('trees').select('owner_id').eq('id', treeId).single()
+    if (tree?.owner_id === session.value?.user?.id) {
+      canEdit.value = true
+    }
+    else {
+      const { data: member } = await supabase
+        .from('tree_members')
+        .select('role')
+        .eq('tree_id', treeId)
+        .eq('user_id', session.value?.user?.id ?? '')
+        .not('accepted_at', 'is', null)
+        .maybeSingle()
+      canEdit.value = member?.role === 'editor'
+    }
   }
 })
 

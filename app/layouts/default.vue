@@ -19,6 +19,23 @@
               Dashboard
             </NuxtLink>
 
+            <!-- Invitation bell -->
+            <UButton
+              to="/settings/invitations"
+              icon="i-heroicons-bell"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              class="relative"
+            >
+              <span
+                v-if="pendingCount > 0"
+                class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center leading-none"
+              >
+                {{ pendingCount > 9 ? '9+' : pendingCount }}
+              </span>
+            </UButton>
+
             <UButton
               :icon="colorModeIcon"
               color="neutral"
@@ -62,7 +79,14 @@
 
 <script setup lang="ts">
 const { user, signOut } = useAuth()
+const session = useSupabaseSession()
 const colorMode = useColorMode()
+
+const { pendingCount, refresh: refreshInvitationCount } = useInvitationCount()
+
+watch(() => session.value?.user?.id, (id) => {
+  if (id) refreshInvitationCount()
+}, { immediate: true })
 
 const colorModeIcon = computed(() => {
   if (colorMode.preference === 'dark') return 'i-heroicons-moon'
@@ -93,6 +117,11 @@ const userMenuItems = computed(() => [
       label: 'Profil Saya',
       icon: 'i-heroicons-user-circle',
       to: '/settings/profile',
+    },
+    {
+      label: pendingCount.value > 0 ? `Undangan Masuk (${pendingCount.value})` : 'Undangan Masuk',
+      icon: 'i-heroicons-bell',
+      to: '/settings/invitations',
     },
     {
       label: 'Pengaturan',
