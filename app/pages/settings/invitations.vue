@@ -113,6 +113,7 @@ useHead({ title: 'Undangan Masuk — Trah' })
 const session = useSupabaseSession()
 const toast = useToast()
 const { fetchMyInvitations, acceptInvitation, declineInvitation } = useTreeMembers()
+const { copy, isSupported: clipboardSupported } = useClipboard()
 
 const loading = ref(false)
 const invitations = ref<PendingInvitation[]>([])
@@ -163,12 +164,29 @@ async function doDecline(id: string): Promise<void> {
   }
 }
 
-function copyId(): void {
-  navigator.clipboard.writeText(session.value?.user?.id ?? '').then(() => {
+async function copyId(): Promise<void> {
+  const id = session.value?.user?.id ?? ''
+  if (!id) return
+  try {
+    if (clipboardSupported.value) {
+      await copy(id)
+    }
+    else {
+      // Fallback: select & execCommand
+      const el = document.createElement('textarea')
+      el.value = id
+      el.style.position = 'fixed'
+      el.style.opacity = '0'
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
     toast.add({ title: 'User ID disalin', color: 'success' })
-  }).catch(() => {
-    toast.add({ title: 'Gagal menyalin', color: 'error' })
-  })
+  }
+  catch {
+    toast.add({ title: 'Gagal menyalin. Salin manual dari kotak di atas.', color: 'error' })
+  }
 }
 
 function formatDate(dateStr: string): string {

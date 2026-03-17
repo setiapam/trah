@@ -112,6 +112,7 @@ useHead({ title: 'Profil — Trah' })
 const { user } = useAuth()
 const { profile, loading, error, fetchProfile, updateProfile, uploadAvatar } = useProfile()
 const toast = useToast()
+const { copy, isSupported: clipboardSupported } = useClipboard()
 
 const saved = ref(false)
 const avatarPreview = ref<string | null>(null)
@@ -128,12 +129,28 @@ onMounted(async () => {
   if (profile.value) state.displayName = profile.value.displayName
 })
 
-function copyUserId(): void {
-  navigator.clipboard.writeText(user.value?.id ?? '').then(() => {
+async function copyUserId(): Promise<void> {
+  const id = user.value?.id ?? ''
+  if (!id) return
+  try {
+    if (clipboardSupported.value) {
+      await copy(id)
+    }
+    else {
+      const el = document.createElement('textarea')
+      el.value = id
+      el.style.position = 'fixed'
+      el.style.opacity = '0'
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+    }
     toast.add({ title: 'User ID disalin', color: 'success' })
-  }).catch(() => {
-    toast.add({ title: 'Gagal menyalin', color: 'error' })
-  })
+  }
+  catch {
+    toast.add({ title: 'Gagal menyalin. Salin manual dari kotak di atas.', color: 'error' })
+  }
 }
 
 function onAvatarChange(e: Event) {
