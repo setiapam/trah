@@ -6,7 +6,7 @@ import type { CreateRelationshipInput } from '../../domain/entities/relationship
 export function useGedcom() {
   const { createTree } = useTree()
   const nuxtApp = useNuxtApp()
-  const user = useSupabaseUser()
+  const session = useSupabaseSession()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function getRepos(): any {
@@ -24,7 +24,7 @@ export function useGedcom() {
     file: File,
     treeName?: string,
   ): Promise<{ treeId: string; personCount: number; warnings: string[] } | null> {
-    const userId = user.value?.id
+    const userId = session.value?.user?.id
     if (!userId) {
       importError.value = 'Anda harus login untuk mengimpor data'
       return null
