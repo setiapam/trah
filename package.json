@@ -16,8 +16,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "db:types": "supabase gen types typescript --project-id arkaukycsjwfzxaifbxz > app/types/database.types.ts",
-    "db:migrate": "supabase db push --project-ref arkaukycsjwfzxaifbxz"
+    "db:types": "dotenv -e .env -- supabase gen types typescript --project-id arkaukycsjwfzxaifbxz --schema public > app/types/database.types.ts",
+    "db:migrate": "dotenv -e .env -- supabase db push --project-ref arkaukycsjwfzxaifbxz"
   },
   "dependencies": {
     "@nuxt/ui": "^4.5.1",
@@ -42,6 +42,7 @@
     "@types/uuid": "^10.0.0",
     "@vue/test-utils": "^2.4.6",
     "dotenv": "^17.3.1",
+    "dotenv-cli": "^11.0.0",
     "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^20.8.4",
     "prettier": "^3.8.1",
