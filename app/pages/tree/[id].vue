@@ -45,35 +45,72 @@
       </div>
     </div>
 
-    <!-- Search -->
-    <div class="mb-4 flex gap-2">
-      <UInput
-        v-model="searchQuery"
-        icon="i-heroicons-magnifying-glass"
-        placeholder="Cari anggota..."
-        class="flex-1"
+    <!-- View toggle -->
+    <div class="mb-4 flex items-center gap-2">
+      <UButton
+        :variant="view === 'tree' ? 'solid' : 'outline'"
+        color="neutral"
+        size="sm"
+        icon="i-heroicons-share"
+        @click="view = 'tree'"
+      >
+        Pohon
+      </UButton>
+      <UButton
+        :variant="view === 'list' ? 'solid' : 'outline'"
+        color="neutral"
+        size="sm"
+        icon="i-heroicons-list-bullet"
+        @click="view = 'list'"
+      >
+        Daftar
+      </UButton>
+    </div>
+
+    <!-- Tree view -->
+    <div v-if="view === 'tree'" class="h-[600px] sm:h-[700px]">
+      <TreeTreeView
+        :root-person-id="currentTree?.rootPersonId ?? null"
+        :persons="persons"
+        :relationships="relationships"
+        :tree-id="treeId"
+        @node-click="navigateTo(`/person/$event`)"
       />
     </div>
 
-    <!-- Loading skeletons -->
-    <div v-if="personLoading" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      <USkeleton v-for="i in 6" :key="i" class="h-24 rounded-xl" />
-    </div>
+    <!-- List view -->
+    <template v-else>
+      <!-- Search -->
+      <div class="mb-4 flex gap-2">
+        <UInput
+          v-model="searchQuery"
+          icon="i-heroicons-magnifying-glass"
+          placeholder="Cari anggota..."
+          class="flex-1"
+        />
+      </div>
 
-    <!-- Empty state -->
-    <UCard v-else-if="filteredPersons.length === 0 && !searchQuery" class="text-center py-12">
-      <UIcon name="i-heroicons-users" class="h-10 w-10 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-      <p class="text-gray-500 dark:text-gray-400 mb-3">Belum ada anggota keluarga.</p>
-      <UButton icon="i-heroicons-user-plus" @click="openAddPerson">Tambah Anggota Pertama</UButton>
-    </UCard>
+      <!-- Loading skeletons -->
+      <div v-if="personLoading" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <USkeleton v-for="i in 6" :key="i" class="h-24 rounded-xl" />
+      </div>
 
-    <!-- No search results -->
-    <UCard v-else-if="filteredPersons.length === 0" class="text-center py-8">
-      <p class="text-gray-500 dark:text-gray-400">Tidak ada anggota yang sesuai dengan "{{ searchQuery }}"</p>
-    </UCard>
+      <!-- Empty state -->
+      <UCard v-else-if="filteredPersons.length === 0 && !searchQuery" class="text-center py-12">
+        <div class="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+          <UIcon name="i-heroicons-users" class="w-8 h-8 text-amber-600" />
+        </div>
+        <p class="font-javanese text-stone-600 mb-3">Belum ada anggota keluarga.</p>
+        <UButton icon="i-heroicons-user-plus" @click="openAddPerson">Tambah Anggota Pertama</UButton>
+      </UCard>
 
-    <!-- Person grid -->
-    <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <!-- No search results -->
+      <UCard v-else-if="filteredPersons.length === 0" class="text-center py-8">
+        <p class="text-stone-500 dark:text-stone-400">Tidak ada anggota yang sesuai dengan "{{ searchQuery }}"</p>
+      </UCard>
+
+      <!-- Person grid -->
+      <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <UCard
         v-for="person in filteredPersons"
         :key="person.id"
@@ -128,6 +165,7 @@
         </div>
       </UCard>
     </div>
+    </template>
 
     <!-- PersonForm slideover -->
     <PersonPersonForm
@@ -166,6 +204,7 @@
 import type { Person } from '../../../domain/entities/person'
 import { getFullName } from '../../../domain/entities/person'
 import PersonPersonForm from '../../components/person/PersonForm.vue'
+import TreeTreeView from '../../components/tree/TreeView.vue'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -181,6 +220,7 @@ const currentTree = ref<import('../../../domain/entities/tree').Tree | null>(nul
 const { persons, loading: personLoading, error, fetchPersons, deletePerson } = usePerson()
 const { relationships, fetchRelationships } = useRelationship()
 
+const view = ref<'tree' | 'list'>('tree')
 const searchQuery = ref('')
 const showPersonForm = ref(false)
 const editingPerson = ref<Person | null>(null)
