@@ -165,6 +165,7 @@
 <script setup lang="ts">
 import type { Person } from '../../../domain/entities/person'
 import { getFullName } from '../../../domain/entities/person'
+import PersonPersonForm from '../../components/person/PersonForm.vue'
 
 definePageMeta({ middleware: 'auth' })
 
