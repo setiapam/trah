@@ -17,10 +17,10 @@
     <div>
       <p class="trah-ornament mb-1">Data Silsilah</p>
       <h1 class="trah-title text-2xl font-bold text-stone-800 dark:text-stone-100">
-        Ekspor GEDCOM
+        Ekspor Data
       </h1>
       <p class="mt-2 text-stone-500 dark:text-stone-400 text-sm">
-        Unduh data silsilah keluarga Anda dalam format GEDCOM 5.5.1 yang kompatibel dengan Gramps, MyHeritage, FamilySearch, dan aplikasi genealogi lainnya.
+        Unduh data silsilah keluarga Anda dalam format GEDCOM 5.5.1 atau JSON Trah.
       </p>
     </div>
 
@@ -50,69 +50,113 @@
       <div
         v-for="tree in trees"
         :key="tree.id"
-        class="card-emas ring-1 ring-amber-200/60 p-5 flex items-center justify-between gap-4"
+        class="card-emas ring-1 ring-amber-200/60 p-5"
       >
-        <div class="min-w-0 flex-1">
-          <h3 class="font-javanese font-semibold text-stone-800 dark:text-stone-100 truncate">
-            {{ tree.name }}
-          </h3>
-          <p v-if="tree.description" class="text-sm text-stone-500 dark:text-stone-400 truncate mt-0.5">
-            {{ tree.description }}
-          </p>
-          <p class="text-xs text-stone-400 mt-1">
-            Dibuat {{ formatDate(tree.createdAt) }}
-          </p>
+        <div class="flex items-start justify-between gap-4">
+          <div class="min-w-0 flex-1">
+            <h3 class="font-javanese font-semibold text-stone-800 dark:text-stone-100 truncate">
+              {{ tree.name }}
+            </h3>
+            <p v-if="tree.description" class="text-sm text-stone-500 dark:text-stone-400 truncate mt-0.5">
+              {{ tree.description }}
+            </p>
+            <p class="text-xs text-stone-400 mt-1">
+              Dibuat {{ formatDate(tree.createdAt) }}
+            </p>
+          </div>
         </div>
 
-        <UButton
-          color="primary"
-          variant="outline"
-          size="sm"
-          icon="i-heroicons-arrow-down-tray"
-          :loading="exportingId === tree.id"
-          :disabled="exporting"
-          @click="handleExport(tree.id, tree.name)"
-        >
-          Ekspor GEDCOM
-        </UButton>
+        <!-- Export buttons -->
+        <div class="mt-4 flex flex-wrap gap-2">
+          <UButton
+            color="primary"
+            variant="outline"
+            size="sm"
+            icon="i-heroicons-arrow-down-tray"
+            :loading="gedcomExportingId === tree.id"
+            :disabled="gedcomExporting || jsonExporting"
+            @click="handleGedcomExport(tree.id, tree.name)"
+          >
+            Ekspor GEDCOM
+          </UButton>
+
+          <UButton
+            color="primary"
+            variant="soft"
+            size="sm"
+            icon="i-heroicons-code-bracket"
+            :loading="jsonExportingId === tree.id"
+            :disabled="gedcomExporting || jsonExporting"
+            @click="handleJsonExport(tree.id, tree.name)"
+          >
+            Ekspor JSON
+          </UButton>
+        </div>
       </div>
     </div>
 
-    <!-- Info card -->
-    <div class="rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 p-5">
-      <h3 class="font-javanese font-semibold text-stone-700 dark:text-stone-300 text-sm mb-2 flex items-center gap-2">
-        <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-amber-500" />
-        Tentang Format GEDCOM
-      </h3>
-      <ul class="space-y-1 text-xs text-stone-500 dark:text-stone-400 list-disc list-inside">
-        <li>File diunduh dalam format GEDCOM 5.5.1 standar internasional</li>
-        <li>Kompatibel dengan Gramps, MyHeritage, FamilySearch, Ancestry</li>
-        <li>Menyertakan data nama, tanggal, tempat, dan relasi keluarga</li>
-        <li>Foto profil tidak disertakan dalam ekspor GEDCOM</li>
-      </ul>
+    <!-- Info cards -->
+    <div class="space-y-3">
+      <div class="rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 p-5">
+        <h3 class="font-javanese font-semibold text-stone-700 dark:text-stone-300 text-sm mb-2 flex items-center gap-2">
+          <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-amber-500" />
+          Tentang Format GEDCOM
+        </h3>
+        <ul class="space-y-1 text-xs text-stone-500 dark:text-stone-400 list-disc list-inside">
+          <li>File diunduh dalam format GEDCOM 5.5.1 standar internasional</li>
+          <li>Kompatibel dengan Gramps, MyHeritage, FamilySearch, Ancestry</li>
+          <li>Menyertakan data nama, tanggal, tempat, dan relasi keluarga</li>
+          <li>Foto profil tidak disertakan dalam ekspor GEDCOM</li>
+        </ul>
+      </div>
+
+      <div class="rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 p-5">
+        <h3 class="font-javanese font-semibold text-stone-700 dark:text-stone-300 text-sm mb-2 flex items-center gap-2">
+          <UIcon name="i-heroicons-information-circle" class="h-4 w-4 text-amber-500" />
+          Tentang Format JSON Trah
+        </h3>
+        <ul class="space-y-1 text-xs text-stone-500 dark:text-stone-400 list-disc list-inside">
+          <li>Format JSON khusus aplikasi Trah (.trah.json)</li>
+          <li>Menyertakan semua data lengkap termasuk catatan dan kontak</li>
+          <li>Dapat diimpor kembali ke aplikasi Trah</li>
+          <li>Ideal untuk backup dan pemindahan data antar akun</li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ middleware: 'auth' })
-useHead({ title: 'Ekspor GEDCOM — Trah' })
+useHead({ title: 'Ekspor Data — Trah' })
 
 const { trees, loading: loadingTrees, fetchTrees } = useTree()
-const { exporting, exportGedcom } = useGedcom()
+const { exporting: gedcomExporting, exportGedcom } = useGedcom()
+const { exporting: jsonExporting, exportJson } = useJsonExport()
 
-const exportingId = ref<string | null>(null)
+const gedcomExportingId = ref<string | null>(null)
+const jsonExportingId = ref<string | null>(null)
 
 // Fetch trees on mount
 await useAsyncData('export-trees', () => fetchTrees().then(() => true))
 
-async function handleExport(treeId: string, treeName: string) {
-  exportingId.value = treeId
+async function handleGedcomExport(treeId: string, treeName: string) {
+  gedcomExportingId.value = treeId
   try {
     await exportGedcom(treeId, treeName)
   }
   finally {
-    exportingId.value = null
+    gedcomExportingId.value = null
+  }
+}
+
+async function handleJsonExport(treeId: string, treeName: string) {
+  jsonExportingId.value = treeId
+  try {
+    await exportJson(treeId, treeName)
+  }
+  finally {
+    jsonExportingId.value = null
   }
 }
 
