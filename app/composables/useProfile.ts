@@ -3,20 +3,21 @@
  */
 export function useProfile() {
   const supabase = useSupabaseClient()
-  const user = useSupabaseUser()
+  const session = useSupabaseSession()
 
   const profile = ref<{ id: string; displayName: string; avatarUrl: string | null } | null>(null)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
   async function fetchProfile() {
-    if (!user.value) return
+    const userId = session.value?.user?.id
+    if (!userId) return
     loading.value = true
     try {
       const { data, error: err } = await supabase
         .from('profiles')
         .select('id, display_name, avatar_url')
-        .eq('id', user.value.id)
+        .eq('id', userId)
         .single()
       if (err) throw err
       profile.value = {
@@ -24,15 +25,21 @@ export function useProfile() {
         displayName: data.display_name,
         avatarUrl: data.avatar_url,
       }
-    } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal memuat profil'
-    } finally {
+    }
+    catch (e: unknown) {
+      const msg = (e instanceof Error ? e.message : null)
+        ?? (e && typeof e === 'object' && 'message' in e ? (e as { message: string }).message : null)
+        ?? 'Gagal memuat profil'
+      error.value = msg
+    }
+    finally {
       loading.value = false
     }
   }
 
   async function updateProfile(displayName: string, avatarUrl?: string | null) {
-    if (!user.value) return
+    const userId = session.value?.user?.id
+    if (!userId) return
     loading.value = true
     error.value = null
     try {
@@ -42,7 +49,7 @@ export function useProfile() {
           display_name: displayName,
           ...(avatarUrl !== undefined && { avatar_url: avatarUrl }),
         })
-        .eq('id', user.value.id)
+        .eq('id', userId)
         .select('id, display_name, avatar_url')
         .single()
       if (err) throw err
@@ -52,17 +59,23 @@ export function useProfile() {
         avatarUrl: data.avatar_url,
       }
       return { success: true }
-    } catch (e: unknown) {
-      error.value = e instanceof Error ? e.message : 'Gagal memperbarui profil'
-    } finally {
+    }
+    catch (e: unknown) {
+      const msg = (e instanceof Error ? e.message : null)
+        ?? (e && typeof e === 'object' && 'message' in e ? (e as { message: string }).message : null)
+        ?? 'Gagal memperbarui profil'
+      error.value = msg
+    }
+    finally {
       loading.value = false
     }
   }
 
   async function uploadAvatar(file: File): Promise<string | null> {
-    if (!user.value) return null
+    const userId = session.value?.user?.id
+    if (!userId) return null
     const ext = file.name.split('.').pop() ?? 'jpg'
-    const path = `avatars/${user.value.id}.${ext}`
+    const path = `avatars/${userId}.${ext}`
 
     const { error: uploadErr } = await supabase.storage
       .from('media')

@@ -3,7 +3,7 @@ import { getErrorMessage } from '../utils/errorMessage'
 
 export function useTree() {
   const nuxtApp = useNuxtApp()
-  const user = useSupabaseUser()
+  const session = useSupabaseSession()
 
   // Lazy getter — hindari capture undefined saat SSR
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -16,14 +16,15 @@ export function useTree() {
   const error = ref<string | null>(null)
 
   async function fetchTrees() {
-    if (!user.value) return
+    const userId = session.value?.user?.id
+    if (!userId) return
     loading.value = true
     error.value = null
     try {
       const repos = getRepos()
       const [owned, shared] = await Promise.all([
-        repos.tree.getByOwner(user.value.id),
-        repos.tree.getAccessible(user.value.id),
+        repos.tree.getByOwner(userId),
+        repos.tree.getAccessible(userId),
       ])
       const all = [...owned, ...shared]
       const seen = new Set<string>()

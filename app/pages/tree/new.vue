@@ -127,7 +127,7 @@ import type { CreatePersonInput } from '../../../domain/entities/person'
 definePageMeta({ middleware: 'auth' })
 useHead({ title: 'Buat Trah Baru — Trah' })
 
-const user = useSupabaseUser()
+const session = useSupabaseSession()
 const { createTree, loading: treeLoading, error: treeError } = useTree()
 const { createPerson, loading: personLoading } = usePerson()
 const toast = useToast()
@@ -174,9 +174,9 @@ function goToStep2() {
 }
 
 async function skipFirstPerson() {
-  if (!user.value) return
+  if (!session.value?.user?.id) return
   const input: CreateTreeInput = {
-    ownerId: user.value.id,
+    ownerId: session.value?.user?.id,
     name: treeForm.name.trim(),
     description: treeForm.description.trim() || null,
   }
@@ -191,12 +191,12 @@ async function skipFirstPerson() {
 }
 
 async function createAll() {
-  if (!user.value || !personForm.firstName.trim()) return
+  if (!session.value?.user?.id || !personForm.firstName.trim()) return
   errorMsg.value = null
 
   // 1. Create tree
   const treeInput: CreateTreeInput = {
-    ownerId: user.value.id,
+    ownerId: session.value?.user?.id,
     name: treeForm.name.trim(),
     description: treeForm.description.trim() || null,
   }
