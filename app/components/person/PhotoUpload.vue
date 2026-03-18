@@ -61,11 +61,10 @@ async function onFileChange(event: Event) {
 
   uploading.value = true
   try {
-    const media = await repos.media.upload({
-      personId: props.personId,
-      treeId: props.treeId,
+    const media = await repos.media.upload(
+      { personId: props.personId, treeId: props.treeId },
       file,
-    })
+    )
     emit('uploaded', media.fileUrl)
     toast.add({ title: 'Foto berhasil diperbarui', color: 'success' })
   }

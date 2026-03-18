@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { IMediaRepository } from '../../domain/repositories/IMediaRepository'
-import type { Media, CreateMediaInput } from '../../domain/entities/media'
+import type { Media, UploadMediaInput } from '../../domain/entities/media'
 import { mediaFromDB, mediaToInsert } from './mappers'
 
 const STORAGE_BUCKET = 'media'
@@ -28,7 +28,7 @@ export class SupabaseMediaRepository implements IMediaRepository {
     return data ? mediaFromDB(data) : null
   }
 
-  async upload(input: CreateMediaInput, file: File): Promise<Media> {
+  async upload(input: UploadMediaInput, file: File): Promise<Media> {
     // 1. Upload ke Supabase Storage
     const ext = file.name.split('.').pop() ?? 'bin'
     const path = `${input.treeId}/${input.personId}/${Date.now()}.${ext}`
@@ -46,7 +46,13 @@ export class SupabaseMediaRepository implements IMediaRepository {
     // 3. Simpan record ke DB
     const { data, error } = await this.client
       .from('media')
-      .insert(mediaToInsert({ ...input, fileUrl: urlData.publicUrl, fileType: file.type }))
+      .insert(mediaToInsert({
+        personId: input.personId,
+        treeId: input.treeId,
+        fileUrl: urlData.publicUrl,
+        fileType: file.type,
+        caption: input.caption ?? null,
+      }))
       .select()
       .single()
     if (error) throw error

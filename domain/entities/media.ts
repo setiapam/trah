@@ -18,6 +18,13 @@ export const CreateMediaSchema = MediaSchema.omit({
 })
 export type CreateMediaInput = z.infer<typeof CreateMediaSchema>
 
+export const UploadMediaSchema = z.object({
+  personId: z.string().uuid(),
+  treeId: z.string().uuid(),
+  caption: z.string().nullable().optional(),
+})
+export type UploadMediaInput = z.infer<typeof UploadMediaSchema>
+
 export const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB
 

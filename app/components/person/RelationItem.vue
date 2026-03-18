@@ -1,5 +1,5 @@
 <template>
-  <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 group">
+  <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
     <UAvatar
       :src="person.photoUrl ?? undefined"
       :alt="getFullName(person)"
@@ -13,19 +13,32 @@
       >
         {{ getFullName(person) }}
       </NuxtLink>
+      <p v-if="roleLabel" class="text-xs text-gray-400">
+        {{ roleLabel }}
+      </p>
       <p v-if="marriageDate" class="text-xs text-gray-400">
         Menikah {{ formatDate(marriageDate) }}
       </p>
     </div>
-    <UButton
-      v-if="showDelete !== false"
-      icon="i-heroicons-x-mark"
-      color="neutral"
-      variant="ghost"
-      size="xs"
-      class="opacity-0 group-hover:opacity-100"
-      @click="$emit('delete', relationshipId)"
-    />
+    <div v-if="canEdit" class="flex items-center gap-1 flex-shrink-0">
+      <UButton
+        v-if="showEdit"
+        icon="i-heroicons-pencil-square"
+        color="neutral"
+        variant="ghost"
+        size="xs"
+        title="Ubah relasi"
+        @click="$emit('edit', relationshipId)"
+      />
+      <UButton
+        icon="i-heroicons-trash"
+        color="error"
+        variant="ghost"
+        size="xs"
+        title="Hapus relasi"
+        @click="$emit('delete', relationshipId)"
+      />
+    </div>
   </div>
 </template>
 
@@ -37,10 +50,14 @@ defineProps<{
   person: Person
   relationshipId: string
   marriageDate?: string | null
+  roleLabel?: string | null
+  canEdit?: boolean
+  showEdit?: boolean
   showDelete?: boolean
 }>()
 
 defineEmits<{
+  edit: [relId: string]
   delete: [relId: string]
 }>()
 

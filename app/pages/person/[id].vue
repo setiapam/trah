@@ -112,6 +112,10 @@
                     :key="p.person.id"
                     :person="p.person"
                     :relationship-id="p.relId"
+                    :role-label="getParentRoleLabel(p.person)"
+                    :can-edit="canEdit"
+                    :show-edit="true"
+                    @edit="onEditRel"
                     @delete="onDeleteRel"
                   />
                 </div>
@@ -126,6 +130,9 @@
                     :person="p.person"
                     :relationship-id="p.relId"
                     :marriage-date="p.marriageDate"
+                    :can-edit="canEdit"
+                    :show-edit="true"
+                    @edit="onEditRel"
                     @delete="onDeleteRel"
                   />
                 </div>
@@ -139,6 +146,9 @@
                     :key="p.person.id"
                     :person="p.person"
                     :relationship-id="p.relId"
+                    :can-edit="canEdit"
+                    :show-edit="true"
+                    @edit="onEditRel"
                     @delete="onDeleteRel"
                   />
                 </div>
@@ -233,6 +243,16 @@
         @close="showRelSelector = false"
         @added="onRelAdded"
       />
+
+      <!-- Relationship edit modal -->
+      <PersonRelationshipEditModal
+        :open="showRelEditModal"
+        :relationship="editingRelationship"
+        :current-person-id="currentPerson.id"
+        :persons="treeParsons"
+        @close="showRelEditModal = false; editingRelationship = null"
+        @updated="onRelUpdated"
+      />
     </template>
   </div>
 </template>
@@ -252,10 +272,12 @@ const personId = route.params.id as string
 const session = useSupabaseSession()
 const supabase = useSupabaseClient()
 const { currentPerson, loading: personLoading, fetchPerson, updatePerson } = usePerson()
-const { relationships, loading: relLoading, fetchRelationships, createRelationship, deleteRelationship, getParents, getChildren, getSpouses, getSiblings } = useRelationship()
+const { relationships, loading: relLoading, fetchRelationships, createRelationship, updateRelationship, deleteRelationship, getParents, getChildren, getSpouses, getSiblings } = useRelationship()
 
 const showEditForm = ref(false)
 const showRelSelector = ref(false)
+const showRelEditModal = ref(false)
+const editingRelationship = ref<Relationship | null>(null)
 const canEdit = ref(false)
 
 // All persons in the tree (for relationship selector)
@@ -386,6 +408,12 @@ const siblingPersons = computed(() => {
 
 // --- Methods ---
 
+function getParentRoleLabel(parent: Person): string {
+  if (parent.gender === 'M') return 'Ayah'
+  if (parent.gender === 'F') return 'Ibu'
+  return 'Orang Tua'
+}
+
 function formatDate(dateStr?: string | null): string {
   if (!dateStr) return ''
   return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -408,7 +436,21 @@ function onRelAdded(_rel: Relationship) {
   fetchRelationships(currentPerson.value!.treeId)
 }
 
+function onEditRel(relId: string) {
+  const rel = relationships.value.find(r => r.id === relId) ?? null
+  editingRelationship.value = rel
+  showRelEditModal.value = true
+}
+
+function onRelUpdated(_rel: Relationship) {
+  showRelEditModal.value = false
+  editingRelationship.value = null
+  fetchRelationships(currentPerson.value!.treeId)
+}
+
 async function onDeleteRel(relId: string) {
+  const confirmed = window.confirm('Yakin ingin menghapus relasi ini?')
+  if (!confirmed) return
   await deleteRelationship(relId)
 }
 </script>

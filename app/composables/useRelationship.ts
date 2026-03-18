@@ -1,4 +1,4 @@
-import type { Relationship, CreateRelationshipInput } from '../../domain/entities/relationship'
+import type { Relationship, CreateRelationshipInput, UpdateRelationshipInput } from '../../domain/entities/relationship'
 import { getErrorMessage } from '../utils/errorMessage'
 
 export function useRelationship() {
@@ -37,6 +37,24 @@ export function useRelationship() {
     }
     catch (e: unknown) {
       error.value = getErrorMessage(e, 'Gagal menambah relasi')
+      return null
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
+  async function updateRelationship(id: string, input: UpdateRelationshipInput): Promise<Relationship | null> {
+    loading.value = true
+    error.value = null
+    try {
+      const updated = await getRepos().relationship.update(id, input)
+      const idx = relationships.value.findIndex(r => r.id === id)
+      if (idx !== -1) relationships.value[idx] = updated
+      return updated
+    }
+    catch (e: unknown) {
+      error.value = getErrorMessage(e, 'Gagal mengubah relasi')
       return null
     }
     finally {
@@ -104,6 +122,7 @@ export function useRelationship() {
     error,
     fetchRelationships,
     createRelationship,
+    updateRelationship,
     deleteRelationship,
     getPersonRelationships,
     getParents,
