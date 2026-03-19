@@ -72,17 +72,30 @@
             :src="avatarPreview ?? profile.avatarUrl ?? undefined"
             :alt="profile.displayName"
             size="xl"
+            :class="(avatarPreview || profile.avatarUrl) ? 'cursor-pointer' : ''"
+            @click="(avatarPreview || profile.avatarUrl) && (showAvatarViewer = true)"
           />
           <div>
-            <label class="cursor-pointer">
-              <UButton variant="outline" size="sm" as="span">Ganti Foto</UButton>
-              <input
-                type="file"
-                class="hidden"
-                accept="image/jpeg,image/png,image/webp"
-                @change="onAvatarChange"
+            <div class="flex gap-2">
+              <label class="cursor-pointer">
+                <UButton variant="outline" size="sm" as="span">Ganti Foto</UButton>
+                <input
+                  type="file"
+                  class="hidden"
+                  accept="image/jpeg,image/png,image/webp"
+                  @change="onAvatarChange"
+                />
+              </label>
+              <UButton
+                v-if="profile.avatarUrl && !avatarPreview"
+                variant="outline"
+                color="error"
+                size="sm"
+                icon="i-heroicons-trash"
+                :loading="avatarDeleting"
+                @click="onDeleteAvatar"
               />
-            </label>
+            </div>
             <p class="mt-1 text-xs text-stone-400">JPG, PNG, WebP. Maks 2MB</p>
           </div>
         </div>
@@ -100,6 +113,13 @@
         </div>
       </UForm>
     </div>
+    <!-- Avatar viewer -->
+    <SharedImageViewer
+      v-if="avatarPreview || profile?.avatarUrl"
+      v-model:open="showAvatarViewer"
+      :src="(avatarPreview ?? profile?.avatarUrl)!"
+      :alt="profile?.displayName ?? 'Avatar'"
+    />
   </div>
 </template>
 
@@ -118,6 +138,8 @@ const { copy, isSupported: clipboardSupported } = useClipboard()
 const saved = ref(false)
 const avatarPreview = ref<string | null>(null)
 const pendingAvatarFile = ref<File | null>(null)
+const showAvatarViewer = ref(false)
+const avatarDeleting = ref(false)
 
 const schema = z.object({
   displayName: z.string().min(2, 'Nama minimal 2 karakter'),
@@ -183,6 +205,27 @@ async function onSubmit() {
     saved.value = true
     pendingAvatarFile.value = null
     setTimeout(() => { saved.value = false }, 3000)
+  }
+}
+
+async function onDeleteAvatar() {
+  const confirmed = window.confirm('Yakin ingin menghapus foto profil?')
+  if (!confirmed) return
+
+  avatarDeleting.value = true
+  try {
+    const result = await updateProfile(state.displayName, null)
+    if (result?.success) {
+      avatarPreview.value = null
+      showAvatarViewer.value = false
+      toast.add({ title: 'Foto profil berhasil dihapus', color: 'success' })
+    }
+  }
+  catch {
+    toast.add({ title: 'Gagal menghapus foto profil', color: 'error' })
+  }
+  finally {
+    avatarDeleting.value = false
   }
 }
 </script>

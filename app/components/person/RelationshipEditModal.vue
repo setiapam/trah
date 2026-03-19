@@ -45,12 +45,12 @@
 
           <!-- Marriage date (for spouse) -->
           <UFormField v-if="editType === 'spouse'" label="Tanggal Nikah">
-            <UInput v-model="editMarriageDate" type="date" class="w-full" />
+            <SharedDateInput v-model="editMarriageDate" />
           </UFormField>
 
           <!-- Divorce date (for spouse) -->
           <UFormField v-if="editType === 'spouse'" label="Tanggal Cerai">
-            <UInput v-model="editDivorceDate" type="date" class="w-full" />
+            <SharedDateInput v-model="editDivorceDate" />
           </UFormField>
 
           <UAlert v-if="submitError" color="error" :title="submitError" />

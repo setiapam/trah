@@ -29,6 +29,8 @@ export function personFromDB(row: Record<string, unknown>): Person {
     email: (row.email as string | null) ?? null,
     address: (row.address as string | null) ?? null,
     notes: (row.notes as string | null) ?? null,
+    linkedPersonId: (row.linked_person_id as string | null) ?? null,
+    linkedFromTreeId: (row.linked_from_tree_id as string | null) ?? null,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }
@@ -52,6 +54,8 @@ export function personToInsert(p: CreatePersonInput): Record<string, unknown> {
     email: p.email ?? null,
     address: p.address ?? null,
     notes: p.notes ?? null,
+    linked_person_id: p.linkedPersonId ?? null,
+    linked_from_tree_id: p.linkedFromTreeId ?? null,
   }
 }
 

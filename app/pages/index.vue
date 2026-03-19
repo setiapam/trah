@@ -81,7 +81,7 @@
           </p>
         </div>
 
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div
             v-for="feature in features"
             :key="feature.title"
@@ -254,6 +254,16 @@ const features = [
     icon: 'i-heroicons-lock-closed',
     title: 'Privasi & Keamanan',
     description: 'Data Anda aman dengan enkripsi dan kontrol akses penuh. Anda yang menentukan siapa yang boleh melihat.',
+  },
+  {
+    icon: 'i-heroicons-link',
+    title: 'Pernikahan Antar-Trah',
+    description: 'Hubungkan anggota keluarga dari trah berbeda saat menikah. Data tetap sinkron tanpa perlu input ulang.',
+  },
+  {
+    icon: 'i-heroicons-plus-circle',
+    title: 'Buat Trah dari Anggota',
+    description: 'Buat trah baru langsung dari anggota yang sudah ada. Otomatis terhubung dengan trah asal melalui salinan terlink.',
   },
 ]
 </script>

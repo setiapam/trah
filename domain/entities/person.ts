@@ -18,6 +18,8 @@ export const PersonSchema = z.object({
   email: z.string().email('Format email tidak valid').nullable().optional(),
   address: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
+  linkedPersonId: z.string().uuid().nullable().optional(),
+  linkedFromTreeId: z.string().uuid().nullable().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
 })
@@ -48,6 +50,10 @@ export function getDisplayName(p: Pick<Person, 'firstName' | 'lastName' | 'nickn
 
 export function isDeceased(p: Pick<Person, 'isAlive' | 'deathDate'>): boolean {
   return !p.isAlive || p.deathDate != null
+}
+
+export function isLinkedPerson(p: Pick<Person, 'linkedPersonId'>): boolean {
+  return p.linkedPersonId != null
 }
 
 export function getAge(p: Pick<Person, 'birthDate' | 'deathDate' | 'isAlive'>): number | null {

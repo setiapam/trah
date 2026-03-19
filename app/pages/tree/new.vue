@@ -87,7 +87,7 @@
       </UFormField>
       <div class="grid grid-cols-2 gap-4">
         <UFormField label="Tanggal Lahir">
-          <UInput v-model="personForm.birthDate" type="date" class="w-full" />
+          <SharedDateInput v-model="personForm.birthDate" />
         </UFormField>
         <UFormField label="Tempat Lahir">
           <UInput v-model="personForm.birthPlace" placeholder="Kota / desa" class="w-full" />

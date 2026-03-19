@@ -61,7 +61,7 @@
               {{ tree.description }}
             </p>
             <p class="text-xs text-stone-400 mt-1">
-              Dibuat {{ formatDate(tree.createdAt) }}
+              Dibuat {{ formatDateDMY(tree.createdAt) }}
             </p>
           </div>
         </div>
@@ -160,12 +160,4 @@ async function handleJsonExport(treeId: string, treeName: string) {
   }
 }
 
-function formatDate(dateStr: string | undefined): string {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
 </script>

@@ -37,6 +37,16 @@
             </UButton>
 
             <UButton
+              icon="i-simple-icons-github"
+              color="neutral"
+              variant="ghost"
+              size="sm"
+              title="GitHub"
+              to="https://github.com/setiapam/trah"
+              target="_blank"
+            />
+
+            <UButton
               :icon="colorModeIcon"
               color="neutral"
               variant="ghost"

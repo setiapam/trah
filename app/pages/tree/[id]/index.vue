@@ -316,14 +316,25 @@ function personMenuItems(person: Person) {
     }],
   ]
   if (canEdit.value) {
-    items.push([{
-      label: 'Edit',
-      icon: 'i-heroicons-pencil',
-      onSelect: () => {
-        editingPerson.value = person
-        showPersonForm.value = true
+    const editGroup: { label: string, icon: string, color?: 'error', onSelect: () => void }[] = [
+      {
+        label: 'Edit',
+        icon: 'i-heroicons-pencil',
+        onSelect: () => {
+          editingPerson.value = person
+          showPersonForm.value = true
+        },
       },
-    }, {
+    ]
+    // Show "Jadikan Akar" only if this person is not already root
+    if (currentTree.value?.rootPersonId !== person.id) {
+      editGroup.push({
+        label: 'Jadikan Akar',
+        icon: 'i-heroicons-arrow-up-on-square',
+        onSelect: () => setAsRoot(person),
+      })
+    }
+    editGroup.push({
       label: 'Hapus',
       icon: 'i-heroicons-trash',
       color: 'error' as const,
@@ -331,9 +342,21 @@ function personMenuItems(person: Person) {
         deletePersonTarget.value = person
         showDeletePersonModal.value = true
       },
-    }])
+    })
+    items.push(editGroup)
   }
   return items
+}
+
+async function setAsRoot(person: Person) {
+  try {
+    await getRepos().tree.update(treeId, { rootPersonId: person.id })
+    currentTree.value = { ...currentTree.value!, rootPersonId: person.id }
+    toast.add({ title: `${getFullName(person)} dijadikan akar silsilah`, color: 'success' })
+  }
+  catch {
+    toast.add({ title: 'Gagal mengubah akar silsilah', color: 'error' })
+  }
 }
 
 function onPersonSaved(person: Person) {

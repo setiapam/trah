@@ -7,17 +7,25 @@
       class="flex-shrink-0"
     />
     <div class="flex-1 min-w-0">
-      <NuxtLink
-        :to="`/person/${person.id}`"
-        class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary-500 truncate block"
-      >
-        {{ getFullName(person) }}
-      </NuxtLink>
+      <div class="flex items-center gap-1">
+        <NuxtLink
+          :to="`/person/${person.id}`"
+          class="text-sm font-medium text-gray-900 dark:text-white hover:text-primary-500 truncate"
+        >
+          {{ getFullName(person) }}
+        </NuxtLink>
+        <UIcon
+          v-if="person.linkedPersonId"
+          name="i-heroicons-link"
+          class="h-3 w-3 text-amber-500 flex-shrink-0"
+          title="Salinan dari trah lain"
+        />
+      </div>
       <p v-if="roleLabel" class="text-xs text-gray-400">
         {{ roleLabel }}
       </p>
       <p v-if="marriageDate" class="text-xs text-gray-400">
-        Menikah {{ formatDate(marriageDate) }}
+        Menikah {{ formatDateDMY(marriageDate) }}
       </p>
     </div>
     <div v-if="canEdit" class="flex items-center gap-1 flex-shrink-0">
@@ -61,7 +69,4 @@ defineEmits<{
   delete: [relId: string]
 }>()
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-}
 </script>

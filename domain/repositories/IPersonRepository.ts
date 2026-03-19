@@ -8,4 +8,6 @@ export interface IPersonRepository {
   delete(id: string): Promise<void>
   bulkInsert(persons: CreatePersonInput[]): Promise<Person[]>
   search(treeId: string, query: string): Promise<Person[]>
+  searchAcrossTrees(query: string, excludeTreeId?: string): Promise<(Person & { treeName: string })[]>
+  createLinkedCopy(sourcePersonId: string, targetTreeId: string): Promise<Person>
 }

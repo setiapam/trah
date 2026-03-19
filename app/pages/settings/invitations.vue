@@ -77,7 +77,7 @@
               size="xs"
               class="mx-0.5"
             >{{ inv.role }}</UBadge>
-            &middot; {{ formatDate(inv.invitedAt) }}
+            &middot; {{ formatDateDMY(inv.invitedAt) }}
           </p>
         </div>
         <div class="flex gap-2 flex-shrink-0">
@@ -192,11 +192,4 @@ async function copyId(): Promise<void> {
   }
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('id-ID', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-  })
-}
 </script>

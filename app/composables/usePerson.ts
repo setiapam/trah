@@ -105,6 +105,32 @@ export function usePerson() {
     }
   }
 
+  async function searchAcrossTrees(query: string, excludeTreeId?: string): Promise<(Person & { treeName: string })[]> {
+    try {
+      return await getRepos().person.searchAcrossTrees(query, excludeTreeId)
+    }
+    catch {
+      return []
+    }
+  }
+
+  async function createLinkedCopy(sourcePersonId: string, targetTreeId: string): Promise<Person | null> {
+    loading.value = true
+    error.value = null
+    try {
+      const person = await getRepos().person.createLinkedCopy(sourcePersonId, targetTreeId)
+      persons.value.push(person)
+      return person
+    }
+    catch (e: unknown) {
+      error.value = getErrorMessage(e, 'Gagal menambah anggota dari trah lain')
+      return null
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
   return {
     persons,
     currentPerson,
@@ -116,5 +142,7 @@ export function usePerson() {
     updatePerson,
     deletePerson,
     searchPersons,
+    searchAcrossTrees,
+    createLinkedCopy,
   }
 }

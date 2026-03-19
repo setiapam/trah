@@ -20,19 +20,39 @@
           <UButton icon="i-heroicons-arrow-left" color="neutral" variant="ghost" size="sm" @click="$router.back()" />
           <div class="flex items-start gap-4">
             <!-- Photo -->
-            <div class="relative group">
+            <div class="flex flex-col items-center gap-2">
               <UAvatar
                 :src="currentPerson.photoUrl ?? undefined"
                 :alt="getFullName(currentPerson)"
                 size="2xl"
                 class="ring-2 ring-white dark:ring-gray-800"
+                :class="currentPerson.photoUrl ? 'cursor-pointer hover:ring-amber-400 transition-all' : ''"
+                @click="currentPerson.photoUrl && (showPhotoViewer = true)"
               />
-              <PersonPhotoUpload
-                :person-id="currentPerson.id"
-                :tree-id="currentPerson.treeId"
-                :current-url="currentPerson.photoUrl ?? null"
-                @uploaded="onPhotoUploaded"
-              />
+              <div v-if="canEdit" class="flex gap-1">
+                <label class="cursor-pointer">
+                  <UButton variant="outline" size="xs" as="span" :loading="photoUploading">
+                    <UIcon v-if="!photoUploading" name="i-heroicons-camera" class="h-3 w-3" />
+                    Ganti Foto
+                  </UButton>
+                  <input
+                    type="file"
+                    class="hidden"
+                    accept="image/jpeg,image/png,image/webp"
+                    :disabled="photoUploading"
+                    @change="onPhotoFileChange"
+                  >
+                </label>
+                <UButton
+                  v-if="currentPerson.photoUrl"
+                  variant="outline"
+                  color="error"
+                  size="xs"
+                  icon="i-heroicons-trash"
+                  :loading="photoDeleting"
+                  @click="onDeletePhoto"
+                />
+              </div>
             </div>
             <div>
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -47,12 +67,39 @@
                   {{ currentPerson.isAlive ? 'Masih Hidup' : 'Almarhum/ah' }}
                 </UBadge>
               </div>
+              <!-- Linked person indicator -->
+              <div
+                v-if="currentPerson.linkedPersonId"
+                class="flex items-center gap-2 mt-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg"
+              >
+                <UIcon name="i-heroicons-link" class="h-4 w-4 text-amber-600 flex-shrink-0" />
+                <span class="text-sm text-amber-800 dark:text-amber-300">
+                  Salinan dari
+                  <NuxtLink
+                    v-if="canAccessLinkedTree"
+                    :to="`/person/${currentPerson.linkedPersonId}`"
+                    class="font-medium text-amber-700 dark:text-amber-400 hover:text-amber-900 underline"
+                  >
+                    {{ linkedTreeName }}
+                  </NuxtLink>
+                  <span v-else class="font-medium">trah lain</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
-        <div v-if="canEdit" class="flex gap-2 flex-shrink-0">
-          <UButton icon="i-heroicons-pencil" color="neutral" variant="outline" @click="showEditForm = true">
+        <div class="flex gap-2 flex-shrink-0">
+          <UButton v-if="canEdit" icon="i-heroicons-pencil" color="neutral" variant="outline" @click="showEditForm = true">
             Edit
+          </UButton>
+          <UButton
+            icon="i-heroicons-plus-circle"
+            color="neutral"
+            variant="outline"
+            :loading="creatingTreeFromPerson"
+            @click="showCreateTreeModal = true"
+          >
+            Buat Trah Baru
           </UButton>
         </div>
       </div>
@@ -244,6 +291,14 @@
         @added="onRelAdded"
       />
 
+      <!-- Photo viewer -->
+      <SharedImageViewer
+        v-if="currentPerson.photoUrl"
+        v-model:open="showPhotoViewer"
+        :src="currentPerson.photoUrl"
+        :alt="getFullName(currentPerson)"
+      />
+
       <!-- Relationship edit modal -->
       <PersonRelationshipEditModal
         :open="showRelEditModal"
@@ -253,6 +308,41 @@
         @close="showRelEditModal = false; editingRelationship = null"
         @updated="onRelUpdated"
       />
+
+      <!-- Create tree from person modal -->
+      <UModal v-model:open="showCreateTreeModal">
+        <template #content>
+          <UCard>
+            <template #header>
+              <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Buat Trah Baru</h3>
+                <UButton icon="i-heroicons-x-mark" color="neutral" variant="ghost" @click="showCreateTreeModal = false" />
+              </div>
+            </template>
+            <div class="space-y-4">
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                Buat trah baru dengan <strong>{{ getFullName(currentPerson) }}</strong> sebagai akar silsilah.
+                Data person akan disalin dan tetap terhubung dengan trah ini.
+              </p>
+              <UFormField label="Nama Trah" required>
+                <UInput v-model="newTreeName" placeholder="Contoh: Keluarga Besar Soekarno" class="w-full" />
+              </UFormField>
+              <UFormField label="Deskripsi (Opsional)">
+                <UTextarea v-model="newTreeDescription" placeholder="Deskripsi singkat tentang trah" :rows="2" class="w-full" />
+              </UFormField>
+              <UAlert v-if="createTreeError" color="error" :title="createTreeError" />
+            </div>
+            <template #footer>
+              <div class="flex justify-end gap-2">
+                <UButton color="neutral" variant="outline" @click="showCreateTreeModal = false">Batal</UButton>
+                <UButton :loading="creatingTreeFromPerson" :disabled="!newTreeName.trim()" @click="onCreateTreeFromPerson">
+                  Buat Trah
+                </UButton>
+              </div>
+            </template>
+          </UCard>
+        </template>
+      </UModal>
     </template>
   </div>
 </template>
@@ -277,6 +367,21 @@ const { relationships, loading: relLoading, fetchRelationships, createRelationsh
 const showEditForm = ref(false)
 const showRelSelector = ref(false)
 const showRelEditModal = ref(false)
+const showPhotoViewer = ref(false)
+const photoUploading = ref(false)
+const photoDeleting = ref(false)
+const linkedTreeName = ref('trah lain')
+const canAccessLinkedTree = ref(false)
+const showCreateTreeModal = ref(false)
+const creatingTreeFromPerson = ref(false)
+const newTreeName = ref('')
+const newTreeDescription = ref('')
+const createTreeError = ref<string | null>(null)
+
+const nuxtApp = useNuxtApp()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const repos = nuxtApp.$repos as any
+const toast = useToast()
 const editingRelationship = ref<Relationship | null>(null)
 const canEdit = ref(false)
 
@@ -313,6 +418,19 @@ onMounted(async () => {
         .maybeSingle()
       canEdit.value = member?.role === 'editor'
     }
+
+    // Check linked person info
+    if (currentPerson.value.linkedFromTreeId) {
+      const { data: linkedTree } = await supabase
+        .from('trees')
+        .select('name')
+        .eq('id', currentPerson.value.linkedFromTreeId)
+        .maybeSingle()
+      if (linkedTree) {
+        linkedTreeName.value = linkedTree.name
+        canAccessLinkedTree.value = true
+      }
+    }
   }
 })
 
@@ -341,9 +459,9 @@ const infoFields = computed(() => {
   return [
     { label: 'Nama Lengkap', value: getFullName(p) },
     { label: 'Jenis Kelamin', value: genderLabel.value },
-    { label: 'Tanggal Lahir', value: formatDate(p.birthDate) },
+    { label: 'Tanggal Lahir', value: p.birthDate ? formatDateDMY(p.birthDate) : null },
     { label: 'Tempat Lahir', value: p.birthPlace },
-    { label: 'Tanggal Wafat', value: p.isAlive ? null : formatDate(p.deathDate) },
+    { label: 'Tanggal Wafat', value: p.isAlive ? null : (p.deathDate ? formatDateDMY(p.deathDate) : null) },
     { label: 'Tempat Wafat', value: p.isAlive ? null : p.deathPlace },
   ].filter(f => f.value)
 })
@@ -414,15 +532,69 @@ function getParentRoleLabel(parent: Person): string {
   return 'Orang Tua'
 }
 
-function formatDate(dateStr?: string | null): string {
-  if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+const PHOTO_MAX_SIZE = 2 * 1024 * 1024
+const PHOTO_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+
+async function onPhotoFileChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+
+  if (!PHOTO_ALLOWED_TYPES.includes(file.type)) {
+    toast.add({ title: 'Format tidak didukung. Gunakan JPG, PNG, atau WebP.', color: 'error' })
+    input.value = ''
+    return
+  }
+  if (file.size > PHOTO_MAX_SIZE) {
+    toast.add({ title: 'Ukuran file maksimal 2 MB.', color: 'error' })
+    input.value = ''
+    return
+  }
+
+  photoUploading.value = true
+  try {
+    const media = await repos.media.upload(
+      { personId: currentPerson.value!.id, treeId: currentPerson.value!.treeId },
+      file,
+    )
+    onPhotoUploaded(media.fileUrl)
+    toast.add({ title: 'Foto berhasil diperbarui', color: 'success' })
+  }
+  catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Gagal mengunggah foto'
+    toast.add({ title: msg, color: 'error' })
+  }
+  finally {
+    photoUploading.value = false
+    input.value = ''
+  }
 }
 
 function onPhotoUploaded(url: string) {
   if (currentPerson.value) {
     updatePerson(currentPerson.value.id, { photoUrl: url })
     currentPerson.value = { ...currentPerson.value, photoUrl: url }
+  }
+}
+
+async function onDeletePhoto() {
+  if (!currentPerson.value?.photoUrl) return
+  const confirmed = window.confirm('Yakin ingin menghapus foto ini?')
+  if (!confirmed) return
+
+  photoDeleting.value = true
+  try {
+    await updatePerson(currentPerson.value.id, { photoUrl: null })
+    currentPerson.value = { ...currentPerson.value, photoUrl: null }
+    showPhotoViewer.value = false
+    toast.add({ title: 'Foto berhasil dihapus', color: 'success' })
+  }
+  catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'Gagal menghapus foto'
+    toast.add({ title: msg, color: 'error' })
+  }
+  finally {
+    photoDeleting.value = false
   }
 }
 
@@ -452,5 +624,38 @@ async function onDeleteRel(relId: string) {
   const confirmed = window.confirm('Yakin ingin menghapus relasi ini?')
   if (!confirmed) return
   await deleteRelationship(relId)
+}
+
+async function onCreateTreeFromPerson() {
+  if (!currentPerson.value || !newTreeName.value.trim()) return
+  creatingTreeFromPerson.value = true
+  createTreeError.value = null
+
+  try {
+    // 1. Create the new tree
+    const tree = await repos.tree.create({
+      ownerId: session.value?.user?.id ?? '',
+      name: newTreeName.value.trim(),
+      description: newTreeDescription.value.trim() || null,
+    })
+
+    // 2. Create a linked copy of this person in the new tree
+    const copy = await repos.person.createLinkedCopy(currentPerson.value.id, tree.id)
+
+    // 3. Set the copy as root of the new tree
+    await repos.tree.update(tree.id, { rootPersonId: copy.id })
+
+    showCreateTreeModal.value = false
+    toast.add({ title: `Trah "${tree.name}" berhasil dibuat`, color: 'success' })
+
+    // Navigate to the new tree
+    navigateTo(`/tree/${tree.id}`)
+  }
+  catch (e: unknown) {
+    createTreeError.value = e instanceof Error ? e.message : 'Gagal membuat trah baru'
+  }
+  finally {
+    creatingTreeFromPerson.value = false
+  }
 }
 </script>

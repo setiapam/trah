@@ -127,7 +127,7 @@
               <p class="text-xs text-stone-400">
                 <span v-if="member.acceptedAt" class="text-green-600 dark:text-green-400">● Aktif</span>
                 <span v-else class="text-amber-500">⏳ Menunggu konfirmasi</span>
-                &middot; diundang {{ formatDate(member.invitedAt) }}
+                &middot; diundang {{ formatDateDMY(member.invitedAt) }}
               </p>
             </div>
 
@@ -324,7 +324,4 @@ async function doKick(): Promise<void> {
   kickingId.value = null
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-}
 </script>

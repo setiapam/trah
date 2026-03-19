@@ -51,7 +51,7 @@
               {{ tree.description }}
             </p>
             <p class="text-xs text-stone-400 dark:text-stone-500 mt-3">
-              Dibuat {{ formatDate(tree.createdAt) }}
+              Dibuat {{ formatDateDMY(tree.createdAt) }}
             </p>
           </div>
           <UDropdownMenu :items="treeMenuItems(tree)">
@@ -135,10 +135,6 @@ onMounted(async () => {
   await Promise.all([fetchProfile(), fetchTrees()])
 })
 
-function formatDate(dateStr?: string): string {
-  if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
-}
 
 function treeMenuItems(tree: Tree) {
   return [

@@ -41,7 +41,7 @@
           <!-- Birth info -->
           <div class="grid grid-cols-2 gap-4">
             <UFormField label="Tanggal Lahir" :error="errors.birthDate">
-              <UInput v-model="form.birthDate" type="date" class="w-full" />
+              <SharedDateInput v-model="form.birthDate" />
             </UFormField>
             <UFormField label="Tempat Lahir">
               <UInput v-model="form.birthPlace" placeholder="Kota / desa" class="w-full" />
@@ -58,7 +58,7 @@
 
           <div v-if="!form.isAlive" class="grid grid-cols-2 gap-4">
             <UFormField label="Tanggal Wafat" :error="errors.deathDate">
-              <UInput v-model="form.deathDate" type="date" class="w-full" />
+              <SharedDateInput v-model="form.deathDate" />
             </UFormField>
             <UFormField label="Tempat Wafat">
               <UInput v-model="form.deathPlace" placeholder="Kota / desa" class="w-full" />
