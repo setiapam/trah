@@ -5,6 +5,26 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.0.2] — 2026-03-19
+
+### Changed
+
+- **Favicon** — Desain baru dengan motif kawung Jawa: background gelap, huruf T emas gradient, 4 kelopak kawung sebagai ornamen, diamond accent. Tersedia dalam SVG, ICO (16/32/48px), dan apple-touch-icon (180px)
+- **OG Image** — Dikompresi dari 506KB menjadi 69KB (86% lebih kecil) tanpa perubahan dimensi
+- **Google Fonts** — Menggunakan variable font range (`wght@0,400..700`) dan preconnect hints untuk loading lebih cepat
+
+### Added
+
+- Apple touch icon (`apple-touch-icon.png`) untuk bookmark di iOS
+- Web App Manifest (`site.webmanifest`) untuk PWA support
+- Preconnect hints ke Google Fonts & gstatic
+
+### Removed
+
+- `og-image.svg` yang tidak terpakai (2.8KB)
+
+---
+
 ## [1.0.1] — 2026-03-19
 
 ### Fixed

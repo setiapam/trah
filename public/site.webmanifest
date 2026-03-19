@@ -1,0 +1,21 @@
+{
+  "name": "Trah — Silsilah Keluarga Digital",
+  "short_name": "Trah",
+  "description": "Aplikasi pencatatan silsilah keluarga digital Indonesia",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1c0a00",
+  "theme_color": "#d97706",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "type": "image/png",
+      "sizes": "180x180"
+    }
+  ]
+}
