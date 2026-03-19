@@ -80,22 +80,16 @@ export class SupabasePersonRepository implements IPersonRepository {
   }
 
   async searchAcrossTrees(query: string, excludeTreeId?: string): Promise<(Person & { treeName: string })[]> {
-    const q = `%${query}%`
-    let request = this.client
-      .from('persons')
-      .select('*, trees!inner(name)')
-      .or(`first_name.ilike.${q},last_name.ilike.${q},nickname.ilike.${q}`)
-      .order('first_name')
-      .limit(50)
-    if (excludeTreeId) {
-      request = request.neq('tree_id', excludeTreeId)
-    }
-    const { data, error } = await request
+    const { data, error } = await this.client
+      .rpc('search_persons_across_trees', {
+        search_query: query,
+        exclude_tree_id: excludeTreeId ?? null,
+      })
     if (error) throw error
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data ?? []).map((row: any) => ({
       ...personFromDB(row),
-      treeName: row.trees?.name ?? '',
+      treeName: row.tree_name ?? '',
     }))
   }
 

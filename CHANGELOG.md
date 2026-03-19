@@ -5,6 +5,20 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.0.1] — 2026-03-19
+
+### Fixed
+
+- **Cross-Tree Search** — Pencarian pasangan dari trah lain sekarang menampilkan hasil. Sebelumnya RLS policy memblokir pencarian karena user harus jadi member tree target. Dibuat database function `search_persons_across_trees` dengan `SECURITY DEFINER` yang bypass RLS untuk keperluan linking pasangan.
+
+### Migrasi
+
+| No | File | Keterangan |
+|----|------|------------|
+| 012 | `012_cross_tree_search_function.sql` | Function `search_persons_across_trees` untuk bypass RLS saat pencarian lintas trah |
+
+---
+
 ## [1.0.0] — 2026-03-19
 
 Rilis pertama Trah — aplikasi silsilah keluarga digital.
