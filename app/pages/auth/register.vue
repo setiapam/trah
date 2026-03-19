@@ -69,13 +69,24 @@
           </label>
           <UInput
             v-model="state.password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="Minimal 6 karakter"
             size="lg"
             class="w-full"
             autocomplete="new-password"
             :color="validationErrors.password ? 'error' : undefined"
-          />
+          >
+            <template #trailing>
+              <UButton
+                :icon="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :padded="false"
+                @click="showPassword = !showPassword"
+              />
+            </template>
+          </UInput>
           <p v-if="validationErrors.password" class="text-xs text-red-500">{{ validationErrors.password }}</p>
         </div>
 
@@ -85,13 +96,24 @@
           </label>
           <UInput
             v-model="state.confirmPassword"
-            type="password"
+            :type="showConfirmPassword ? 'text' : 'password'"
             placeholder="Ulangi kata sandi"
             size="lg"
             class="w-full"
             autocomplete="new-password"
             :color="validationErrors.confirmPassword ? 'error' : undefined"
-          />
+          >
+            <template #trailing>
+              <UButton
+                :icon="showConfirmPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+                color="neutral"
+                variant="ghost"
+                size="xs"
+                :padded="false"
+                @click="showConfirmPassword = !showConfirmPassword"
+              />
+            </template>
+          </UInput>
           <p v-if="validationErrors.confirmPassword" class="text-xs text-red-500">{{ validationErrors.confirmPassword }}</p>
         </div>
 
@@ -144,6 +166,8 @@ if (user.value) await navigateTo('/dashboard')
 const { loading, error, clearError, signUpWithEmail, signInWithGoogle } = useAuth()
 
 const registered = ref(false)
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const state = reactive({ displayName: '', email: '', password: '', confirmPassword: '' })
 const validationErrors = reactive({ displayName: '', email: '', password: '', confirmPassword: '' })
 

@@ -140,4 +140,95 @@ export class SupabasePersonRepository implements IPersonRepository {
     }
     return this.create(copyInput)
   }
+
+  async createLinkedCopyWithDescendants(
+    sourcePersonId: string,
+    targetTreeId: string,
+    sourceTreeRelationships: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }[],
+  ): Promise<{ copiedPersons: Person[]; idMap: Map<string, string> }> {
+    // Map from source person ID to target person ID
+    const idMap = new Map<string, string>()
+    const copiedPersons: Person[] = []
+
+    // Collect all person IDs to copy: the root person + all descendants (spouses, children, recursively)
+    const personIdsToCopy = new Set<string>()
+
+    const collectDescendants = (personId: string) => {
+      if (personIdsToCopy.has(personId)) return
+      personIdsToCopy.add(personId)
+
+      for (const rel of sourceTreeRelationships) {
+        if (rel.relationshipType === 'spouse') {
+          // Copy spouses
+          if (rel.personId === personId && !personIdsToCopy.has(rel.relatedPersonId)) {
+            personIdsToCopy.add(rel.relatedPersonId)
+          }
+          if (rel.relatedPersonId === personId && !personIdsToCopy.has(rel.personId)) {
+            personIdsToCopy.add(rel.personId)
+          }
+        }
+        if (rel.relationshipType === 'parent' && rel.personId === personId) {
+          // This person is parent of relatedPersonId → copy child and recurse
+          collectDescendants(rel.relatedPersonId)
+        }
+      }
+    }
+
+    collectDescendants(sourcePersonId)
+
+    // Copy each person
+    for (const pid of personIdsToCopy) {
+      // Check if already exists as linked copy in target tree
+      const { data: existing } = await this.client
+        .from('persons')
+        .select('id')
+        .eq('tree_id', targetTreeId)
+        .eq('linked_person_id', pid)
+        .maybeSingle()
+
+      if (existing) {
+        idMap.set(pid, existing.id)
+        continue
+      }
+
+      const source = await this.getById(pid)
+      if (!source) continue
+
+      // Resolve original (avoid copy-of-copy)
+      let originalId = source.id
+      let originalTreeId = source.treeId
+      if (source.linkedPersonId) {
+        const original = await this.getById(source.linkedPersonId)
+        if (original) {
+          originalId = original.id
+          originalTreeId = original.treeId
+        }
+      }
+
+      const copy = await this.create({
+        treeId: targetTreeId,
+        firstName: source.firstName,
+        lastName: source.lastName,
+        nickname: source.nickname,
+        gender: source.gender,
+        birthDate: source.birthDate,
+        birthPlace: source.birthPlace,
+        deathDate: source.deathDate,
+        deathPlace: source.deathPlace,
+        isAlive: source.isAlive,
+        photoUrl: source.photoUrl,
+        phone: source.phone,
+        email: source.email,
+        address: source.address,
+        notes: source.notes,
+        linkedPersonId: originalId,
+        linkedFromTreeId: originalTreeId,
+      })
+
+      idMap.set(pid, copy.id)
+      copiedPersons.push(copy)
+    }
+
+    return { copiedPersons, idMap }
+  }
 }

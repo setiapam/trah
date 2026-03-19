@@ -322,7 +322,8 @@
             <div class="space-y-4">
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 Buat trah baru dengan <strong>{{ getFullName(currentPerson) }}</strong> sebagai akar silsilah.
-                Data person akan disalin dan tetap terhubung dengan trah ini.
+                Pasangan, anak, cucu, dan seluruh keturunan akan ikut disalin beserta relasinya.
+                Data tetap terhubung dengan trah asal.
               </p>
               <UFormField label="Nama Trah" required>
                 <UInput v-model="newTreeName" placeholder="Contoh: Keluarga Besar Soekarno" class="w-full" />
@@ -639,11 +640,41 @@ async function onCreateTreeFromPerson() {
       description: newTreeDescription.value.trim() || null,
     })
 
-    // 2. Create a linked copy of this person in the new tree
-    const copy = await repos.person.createLinkedCopy(currentPerson.value.id, tree.id)
+    // 2. Load all relationships from source tree
+    const sourceRels = await repos.relationship.getByTree(currentPerson.value.treeId)
+    const relData = sourceRels.map((r: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }) => ({
+      personId: r.personId,
+      relatedPersonId: r.relatedPersonId,
+      relationshipType: r.relationshipType,
+      marriageDate: r.marriageDate,
+      divorceDate: r.divorceDate,
+    }))
 
-    // 3. Set the copy as root of the new tree
-    await repos.tree.update(tree.id, { rootPersonId: copy.id })
+    // 3. Create linked copies of this person + descendants (spouses, children, grandchildren, etc.)
+    const { idMap } = await repos.person.createLinkedCopyWithDescendants(currentPerson.value.id, tree.id, relData)
+
+    // 4. Set the copy as root of the new tree
+    const rootCopyId = idMap.get(currentPerson.value.id)
+    if (rootCopyId) {
+      await repos.tree.update(tree.id, { rootPersonId: rootCopyId })
+    }
+
+    // 5. Copy relevant relationships to the new tree
+    const relsToCopy = sourceRels.filter((r: { personId: string; relatedPersonId: string }) =>
+      idMap.has(r.personId) && idMap.has(r.relatedPersonId),
+    )
+    if (relsToCopy.length > 0) {
+      await repos.relationship.bulkInsert(
+        relsToCopy.map((r: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }) => ({
+          treeId: tree.id,
+          personId: idMap.get(r.personId)!,
+          relatedPersonId: idMap.get(r.relatedPersonId)!,
+          relationshipType: r.relationshipType,
+          marriageDate: r.marriageDate ?? null,
+          divorceDate: r.divorceDate ?? null,
+        })),
+      )
+    }
 
     showCreateTreeModal.value = false
     toast.add({ title: `Trah "${tree.name}" berhasil dibuat`, color: 'success' })

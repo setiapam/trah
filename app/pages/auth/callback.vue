@@ -31,6 +31,12 @@ onMounted(async () => {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (error) {
       console.error('Exchange session error:', error.message)
+      // Check if session was already established (e.g. by Supabase module)
+      const { data: sessionData } = await supabase.auth.getSession()
+      if (sessionData.session) {
+        await navigateTo('/dashboard')
+        return
+      }
       statusMessage.value = 'Gagal memproses autentikasi. Silakan coba lagi.'
       setTimeout(() => navigateTo('/auth/login'), 3000)
       return
@@ -40,10 +46,14 @@ onMounted(async () => {
   }
 
   // Implicit flow / hash token: cek session yang sudah terbentuk
-  const { data } = await supabase.auth.getSession()
-  if (data.session) {
-    await navigateTo('/dashboard')
-    return
+  // Retry briefly to allow hash-based session to be processed
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const { data } = await supabase.auth.getSession()
+    if (data.session) {
+      await navigateTo('/dashboard')
+      return
+    }
+    if (attempt < 2) await new Promise(r => setTimeout(r, 1000))
   }
 
   // Tidak ada session — redirect ke login

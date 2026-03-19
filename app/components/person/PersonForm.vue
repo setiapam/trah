@@ -14,7 +14,7 @@
         <div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
           <!-- Name fields -->
           <div class="grid grid-cols-2 gap-4">
-            <UFormField label="Nama Depan" required :error="errors.firstName">
+            <UFormField label="Nama Depan" required :error="errors.firstName || undefined">
               <UInput v-model="form.firstName" placeholder="Nama depan" class="w-full" />
             </UFormField>
             <UFormField label="Nama Belakang">
@@ -40,7 +40,7 @@
 
           <!-- Birth info -->
           <div class="grid grid-cols-2 gap-4">
-            <UFormField label="Tanggal Lahir" :error="errors.birthDate">
+            <UFormField label="Tanggal Lahir" :error="errors.birthDate || undefined">
               <SharedDateInput v-model="form.birthDate" />
             </UFormField>
             <UFormField label="Tempat Lahir">
@@ -57,7 +57,7 @@
           </UFormField>
 
           <div v-if="!form.isAlive" class="grid grid-cols-2 gap-4">
-            <UFormField label="Tanggal Wafat" :error="errors.deathDate">
+            <UFormField label="Tanggal Wafat" :error="errors.deathDate || undefined">
               <SharedDateInput v-model="form.deathDate" />
             </UFormField>
             <UFormField label="Tempat Wafat">
@@ -73,7 +73,7 @@
             <UFormField label="Telepon">
               <UInput v-model="form.phone" placeholder="08xx" class="w-full" />
             </UFormField>
-            <UFormField label="Email" :error="errors.email">
+            <UFormField label="Email" :error="errors.email || undefined">
               <UInput v-model="form.email" type="email" placeholder="email@contoh.com" class="w-full" />
             </UFormField>
           </div>

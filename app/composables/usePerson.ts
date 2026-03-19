@@ -131,6 +131,27 @@ export function usePerson() {
     }
   }
 
+  async function createLinkedCopyWithDescendants(
+    sourcePersonId: string,
+    targetTreeId: string,
+    sourceTreeRelationships: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }[],
+  ): Promise<{ copiedPersons: Person[]; idMap: Map<string, string> } | null> {
+    loading.value = true
+    error.value = null
+    try {
+      const result = await getRepos().person.createLinkedCopyWithDescendants(sourcePersonId, targetTreeId, sourceTreeRelationships)
+      persons.value.push(...result.copiedPersons)
+      return result
+    }
+    catch (e: unknown) {
+      error.value = getErrorMessage(e, 'Gagal menyalin anggota beserta keturunan')
+      return null
+    }
+    finally {
+      loading.value = false
+    }
+  }
+
   return {
     persons,
     currentPerson,
@@ -144,5 +165,6 @@ export function usePerson() {
     searchPersons,
     searchAcrossTrees,
     createLinkedCopy,
+    createLinkedCopyWithDescendants,
   }
 }

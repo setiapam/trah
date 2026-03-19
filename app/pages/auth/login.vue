@@ -30,12 +30,23 @@
       <UFormField label="Kata Sandi" name="password" required>
         <UInput
           v-model="state.password"
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           placeholder="Kata sandi"
           size="lg"
           class="w-full"
           autocomplete="current-password"
-        />
+        >
+          <template #trailing>
+            <UButton
+              :icon="showPassword ? 'i-heroicons-eye-slash' : 'i-heroicons-eye'"
+              color="neutral"
+              variant="ghost"
+              size="xs"
+              :padded="false"
+              @click="showPassword = !showPassword"
+            />
+          </template>
+        </UInput>
       </UFormField>
 
       <div class="flex justify-end">
@@ -99,6 +110,7 @@ const schema = z.object({
 
 type Schema = z.output<typeof schema>
 
+const showPassword = ref(false)
 const state = reactive({ email: '', password: '' })
 
 async function onSubmit(event: FormSubmitEvent<Schema>) {

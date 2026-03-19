@@ -5,6 +5,20 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.1.0] — 2026-03-20
+
+### Added
+
+- **Tombol lihat password** — Form login dan daftar kini memiliki tombol eye icon untuk menampilkan/menyembunyikan kata sandi yang diketik
+- **Salin keturunan saat buat trah baru** — Saat membuat trah baru dari seorang anggota, pasangan, anak, cucu, dan seluruh keturunannya ikut disalin beserta relasinya ke trah baru
+- **Salin keturunan saat link pasangan dari trah lain** — Saat menambahkan pasangan dari trah lain, anak dan keturunan pasangan tersebut juga ikut disalin
+
+### Fixed
+
+- **Pesan error autentikasi palsu** — Halaman callback OAuth tidak lagi menampilkan "Gagal memproses autentikasi" ketika sesi sudah berhasil dibuat oleh modul Supabase. Menambahkan pengecekan sesi sebelum menampilkan error, dan retry untuk implicit flow
+
+---
+
 ## [1.0.2] — 2026-03-19
 
 ### Changed

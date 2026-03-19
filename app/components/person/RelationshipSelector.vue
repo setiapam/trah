@@ -107,7 +107,7 @@
             <template #description>
               <strong>{{ getFullName(selectedCrossTreePerson) }}</strong> dari trah
               <strong>{{ selectedCrossTreePerson.treeName }}</strong>
-              akan ditambahkan sebagai salinan ke trah ini.
+              akan ditambahkan beserta anak dan keturunannya sebagai salinan ke trah ini.
             </template>
           </UAlert>
 
@@ -153,7 +153,11 @@ const emit = defineEmits<{
 }>()
 
 const { createRelationship, loading, error: repoError } = useRelationship()
-const { searchAcrossTrees, createLinkedCopy } = usePerson()
+const { searchAcrossTrees, createLinkedCopyWithDescendants } = usePerson()
+
+const nuxtApp = useNuxtApp()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const repos = nuxtApp.$repos as any
 
 const selectedType = ref<'parent' | 'child' | 'spouse'>('child')
 const selectedPersonId = ref<string | null>(null)
@@ -268,17 +272,51 @@ async function submit() {
 
   let targetPersonId = selectedPersonId.value
 
-  // If cross-tree person selected, create linked copy first
+  // If cross-tree person selected, create linked copy with descendants
   if (selectedCrossTreePerson.value) {
     crossTreeCreating.value = true
     try {
-      const copy = await createLinkedCopy(selectedCrossTreePerson.value.id, props.treeId)
-      if (!copy) {
+      // Load relationships from source tree to copy descendants
+      const sourceTreeId = selectedCrossTreePerson.value.treeId
+      const sourceRels = await repos.relationship.getByTree(sourceTreeId)
+      const relData = sourceRels.map((r: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }) => ({
+        personId: r.personId,
+        relatedPersonId: r.relatedPersonId,
+        relationshipType: r.relationshipType,
+        marriageDate: r.marriageDate,
+        divorceDate: r.divorceDate,
+      }))
+
+      const result = await createLinkedCopyWithDescendants(selectedCrossTreePerson.value.id, props.treeId, relData)
+      if (!result) {
         submitError.value = 'Gagal menambah anggota dari trah lain'
         crossTreeCreating.value = false
         return
       }
-      targetPersonId = copy.id
+
+      targetPersonId = result.idMap.get(selectedCrossTreePerson.value.id) ?? ''
+      if (!targetPersonId) {
+        submitError.value = 'Gagal menambah anggota dari trah lain'
+        crossTreeCreating.value = false
+        return
+      }
+
+      // Copy relationships between copied persons to this tree
+      const relsToCopy = sourceRels.filter((r: { personId: string; relatedPersonId: string }) =>
+        result.idMap.has(r.personId) && result.idMap.has(r.relatedPersonId),
+      )
+      if (relsToCopy.length > 0) {
+        await repos.relationship.bulkInsert(
+          relsToCopy.map((r: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }) => ({
+            treeId: props.treeId,
+            personId: result.idMap.get(r.personId)!,
+            relatedPersonId: result.idMap.get(r.relatedPersonId)!,
+            relationshipType: r.relationshipType,
+            marriageDate: r.marriageDate ?? null,
+            divorceDate: r.divorceDate ?? null,
+          })),
+        )
+      }
     }
     catch (e: unknown) {
       submitError.value = e instanceof Error ? e.message : 'Gagal menambah anggota dari trah lain'
