@@ -158,10 +158,11 @@ export function treeMemberFromDB(row: Record<string, unknown>): TreeMember {
   return {
     id: row.id as string,
     treeId: row.tree_id as string,
-    userId: row.user_id as string,
+    userId: (row.user_id as string | null) ?? null,
     role: row.role as 'owner' | 'editor' | 'viewer',
     invitedAt: row.invited_at as string,
     acceptedAt: (row.accepted_at as string | null) ?? null,
+    invitedEmail: (row.invited_email as string | null) ?? null,
   }
 }
 

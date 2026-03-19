@@ -87,9 +87,13 @@ const session = useSupabaseSession()
 const colorMode = useColorMode()
 
 const { pendingCount, refresh: refreshInvitationCount } = useInvitationCount()
+const { claimEmailInvitations } = useTreeMembers()
 
-watch(() => session.value?.user?.id, (id) => {
-  if (id) refreshInvitationCount()
+watch(() => session.value?.user?.id, async (id) => {
+  if (id) {
+    await claimEmailInvitations()
+    refreshInvitationCount()
+  }
 }, { immediate: true })
 
 const colorModeIcon = computed(() => {

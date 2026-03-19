@@ -12,10 +12,11 @@ export const ROLE_HIERARCHY: Record<TreeMemberRole, number> = {
 export const TreeMemberSchema = z.object({
   id: z.string().uuid(),
   treeId: z.string().uuid(),
-  userId: z.string().uuid(),
+  userId: z.string().uuid().nullable().optional(),
   role: TreeMemberRoleSchema,
   invitedAt: z.string().optional(),
   acceptedAt: z.string().nullable().optional(),
+  invitedEmail: z.string().nullable().optional(),
 })
 
 export type TreeMember = z.infer<typeof TreeMemberSchema>

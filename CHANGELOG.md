@@ -1,0 +1,79 @@
+# Changelog
+
+Semua perubahan penting pada proyek Trah dicatat di file ini.
+Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
+
+---
+
+## [1.0.0] — 2026-03-19
+
+Rilis pertama Trah — aplikasi silsilah keluarga digital.
+
+### Fitur Inti
+
+- **Autentikasi** — Register, login (email + Google OAuth), logout, profil pengguna
+- **Kelola Trah** — Buat, edit, hapus pohon keluarga (tree)
+- **Kelola Anggota** — CRUD anggota keluarga (person) dengan foto, tanggal lahir/wafat, kontak, catatan
+- **Relasi Keluarga** — Tambah/edit/hapus relasi orang tua, anak, pasangan dengan label peran (Ayah/Ibu)
+- **Visualisasi Pohon** — D3.js tree interaktif dengan zoom, pan, dan klik navigasi
+  - Pasangan ditampilkan bersebelahan (side-by-side) dengan simbol hati
+  - Indikator visual untuk person yang di-link dari trah lain
+- **GEDCOM Import/Export** — Mendukung format GEDCOM 5.5.1 standar internasional
+- **JSON Import/Export** — Export/import data dalam format JSON dengan validasi Zod
+- **Kolaborasi** — Undang anggota keluarga lain ke trah dengan role (owner/editor/viewer)
+  - Undang via User ID (UUID)
+  - Undang via email (termasuk email yang belum terdaftar — undangan menunggu hingga pendaftaran)
+  - Notifikasi undangan masuk dengan badge count di navbar
+  - Terima/tolak undangan di halaman settings
+  - Direct invite link (`/invite/[token]`)
+- **Cross-Tree Linking** — Hubungkan anggota keluarga antar-trah saat menikah
+  - Salinan dengan link (linked copy) — data tetap terhubung tanpa duplikasi manual
+  - Indikator visual di tree view, person detail, dan relation list
+  - Navigasi ke person asli di trah asal
+- **Buat Trah dari Anggota** — Buat trah baru dari person yang sudah ada (otomatis linked copy)
+  - Viewer juga bisa membuat trah baru dari person di trah yang diundang
+- **Ubah Akar Trah** — Pindahkan root person ke anggota lain
+- **Foto Profil & Person** — Upload, lihat (modal full-size), dan hapus foto
+- **Format Tanggal** — Semua tanggal dalam format dd/mm/yyyy (input dan tampilan)
+
+### Landing Page & SEO
+
+- Landing page dengan desain Batik Jawa (kawung, parang, emas)
+- 8 kartu fitur unggulan + section FAQ + pepatah Jawa
+- OG Image 1200x630 untuk social sharing
+- Sitemap otomatis (`@nuxtjs/sitemap`)
+- Structured data JSON-LD (WebSite, SoftwareApplication, FAQPage)
+- Meta tags lengkap (OG, Twitter Card, canonical)
+- `robots.txt` dengan sitemap reference
+
+### Desain & UI
+
+- Sistem desain Batik Jawa — palet emas/stone, motif kawung & parang, font Playfair Display
+- Nuxt UI 3 + Tailwind CSS 4
+- Dark mode (system/light/dark toggle)
+- Responsive untuk mobile dan desktop
+- GitHub icon di navbar (selalu tampil)
+
+### Teknis
+
+- Nuxt 4 (compatibility version 4) + TypeScript strict
+- Clean Architecture: Domain → Infrastructure → Application → Presentation
+- Supabase (PostgreSQL + Auth + Storage) dengan Row Level Security
+- Zod validation untuk semua entity
+- Repository pattern dengan dependency injection via plugin
+
+### Database Migrations
+
+| File | Deskripsi |
+|------|-----------|
+| `001_init.sql` | Tabel utama + RLS + triggers |
+| `002_fix_new_user_trigger.sql` | Fix trigger handle_new_user |
+| `003_fix_trigger_search_path.sql` | Fix search_path trigger |
+| `004_fix_rls_owner_access.sql` | Fix RLS untuk tree owner |
+| `005_fix_invite_visibility.sql` | Fix invited user bisa lihat undangan |
+| `006_fix_invite_flow.sql` | Fix invite flow + profiles SELECT |
+| `007_fix_tree_members_select.sql` | Fix tree owner bisa lihat members |
+| `008_fix_tree_members_update_delete.sql` | Fix owner update/delete members |
+| `009_storage_rls_policies.sql` | RLS policies untuk media bucket |
+| `010_cross_tree_person_linking.sql` | Kolom linked_person_id & linked_from_tree_id |
+| `011_invite_by_email.sql` | Undang via email + claim on login |

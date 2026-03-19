@@ -668,3 +668,33 @@ SUPABASE_SERVICE_KEY=your-service-key  # Hanya untuk server-side admin operation
 8. **RLS selalu aktif** — jangan pernah disable RLS, bahkan untuk development
 9. **Responsive dari awal** — setiap komponen harus bekerja di mobile dan desktop
 10. **Commit per tahap** — setiap tahap selesai = 1 commit dengan message yang jelas
+11. **Versioning WAJIB** — Setiap perubahan fitur atau perbaikan HARUS dicatat di `CHANGELOG.md` sebelum commit. Ikuti aturan di bawah.
+
+---
+
+## Versioning
+
+Proyek ini menggunakan [Semantic Versioning](https://semver.org/):
+
+- **MAJOR** (X.0.0) — Perubahan breaking / rewrite besar
+- **MINOR** (0.X.0) — Fitur baru, penambahan fungsionalitas
+- **PATCH** (0.0.X) — Bug fix, perbaikan kecil, tweak UI
+
+### Aturan Versioning
+
+1. **Versi aktif** tersimpan di `package.json` field `version` dan di heading terbaru `CHANGELOG.md`
+2. **Setiap commit yang mengubah fungsionalitas** HARUS:
+   - Update versi di `package.json`
+   - Tambah entry baru atau update entry yang ada di `CHANGELOG.md`
+3. **Format CHANGELOG** mengikuti pola:
+   ```markdown
+   ## [X.Y.Z] — YYYY-MM-DD
+   ### Added / Changed / Fixed / Removed
+   - Deskripsi perubahan
+   ```
+4. **Kapan menaikkan versi:**
+   - Tambah fitur baru → naikkan MINOR (misal 1.0.0 → 1.1.0)
+   - Fix bug / tweak kecil → naikkan PATCH (misal 1.1.0 → 1.1.1)
+   - Perubahan breaking → naikkan MAJOR (misal 1.1.1 → 2.0.0)
+5. **Jangan lupa** update kedua file (`package.json` + `CHANGELOG.md`) secara bersamaan
+6. **Migration baru** harus dicatat di tabel migrations di CHANGELOG

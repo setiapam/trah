@@ -65,12 +65,12 @@
         />
 
         <div class="space-y-3">
-          <UFormField label="User ID yang diundang">
+          <UFormField label="Email atau User ID">
             <UInput
-              v-model="inviteUserId"
-              placeholder="Contoh: 550e8400-e29b-41d4-a716-446655440000"
+              v-model="inviteInput"
+              placeholder="nama@email.com atau User ID (UUID)"
               :disabled="inviting"
-              class="w-full font-mono text-sm"
+              class="w-full text-sm"
             />
           </UFormField>
           <div class="flex gap-2 items-end">
@@ -80,7 +80,7 @@
             <UButton
               color="primary"
               :loading="inviting"
-              :disabled="!inviteUserId.trim()"
+              :disabled="!inviteInput.trim()"
               @click="doInvite"
             >
               Kirim Undangan
@@ -89,7 +89,7 @@
         </div>
         <p class="text-xs text-stone-400 flex items-start gap-1">
           <UIcon name="i-heroicons-information-circle" class="h-3.5 w-3.5 mt-0.5 shrink-0" />
-          User ID bisa ditemukan di halaman Pengaturan → Profil masing-masing pengguna.
+          Masukkan email atau User ID. Jika email belum terdaftar, undangan akan menunggu hingga pemilik email mendaftar.
         </p>
       </div>
 
@@ -124,8 +124,12 @@
               <p class="text-sm font-medium text-stone-800 dark:text-stone-100 truncate">
                 {{ member.displayName }}
               </p>
+              <p v-if="member.invitedEmail && !member.userId" class="text-xs text-stone-400 truncate">
+                {{ member.invitedEmail }}
+              </p>
               <p class="text-xs text-stone-400">
                 <span v-if="member.acceptedAt" class="text-green-600 dark:text-green-400">● Aktif</span>
+                <span v-else-if="!member.userId && member.invitedEmail" class="text-blue-500">📧 Menunggu pendaftaran</span>
                 <span v-else class="text-amber-500">⏳ Menunggu konfirmasi</span>
                 &middot; diundang {{ formatDateDMY(member.invitedAt) }}
               </p>
@@ -219,7 +223,7 @@ onMounted(async () => {
 })
 
 // Invite
-const inviteUserId = ref('')
+const inviteInput = ref('')
 const inviteRole = ref<'editor' | 'viewer'>('viewer')
 const inviting = ref(false)
 const inviteError = ref<string | null>(null)
@@ -231,45 +235,67 @@ const roleOptions = [
 ]
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 async function doInvite(): Promise<void> {
   inviteError.value = null
   inviteSuccess.value = null
-  const uid = inviteUserId.value.trim()
+  const input = inviteInput.value.trim()
 
-  if (!UUID_REGEX.test(uid)) {
-    inviteError.value = 'Format User ID tidak valid. Pastikan menyalin UUID lengkap.'
+  const isUUID = UUID_REGEX.test(input)
+  const isEmail = EMAIL_REGEX.test(input)
+
+  if (!isUUID && !isEmail) {
+    inviteError.value = 'Masukkan email yang valid atau User ID (UUID) yang lengkap.'
     return
   }
-  if (uid === session.value?.user?.id) {
+
+  // Self-invite check
+  if (isUUID && input === session.value?.user?.id) {
+    inviteError.value = 'Tidak bisa mengundang diri sendiri.'
+    return
+  }
+  if (isEmail && input.toLowerCase() === session.value?.user?.email?.toLowerCase()) {
     inviteError.value = 'Tidak bisa mengundang diri sendiri.'
     return
   }
 
   inviting.value = true
   try {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('id', uid)
-      .maybeSingle()
+    let ok = false
 
-    if (!profile) {
-      inviteError.value = 'User dengan ID tersebut tidak ditemukan. Pastikan User ID sudah benar.'
-      return
+    if (isUUID) {
+      // UUID-based invite: check if user exists
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', input)
+        .maybeSingle()
+
+      if (!profile) {
+        inviteError.value = 'User dengan ID tersebut tidak ditemukan.'
+        return
+      }
+
+      ok = await inviteMember(treeId, input, inviteRole.value as MemberRole)
+    }
+    else {
+      // Email-based invite: store email, user_id will be linked on login
+      ok = await inviteMember(treeId, null, inviteRole.value as MemberRole, input.toLowerCase())
     }
 
-    const ok = await inviteMember(treeId, uid, inviteRole.value as MemberRole)
     if (ok) {
-      inviteSuccess.value = 'Undangan berhasil dikirim!'
-      inviteUserId.value = ''
+      inviteSuccess.value = isEmail
+        ? `Undangan dikirim ke ${input}. ${!isUUID ? 'Jika belum terdaftar, undangan menunggu hingga mendaftar.' : ''}`
+        : 'Undangan berhasil dikirim!'
+      inviteInput.value = ''
       await fetchMembers(treeId)
-      setTimeout(() => { inviteSuccess.value = null }, 4000)
+      setTimeout(() => { inviteSuccess.value = null }, 6000)
     }
     else {
       const msg = memberError.value
-      if (msg?.includes('duplicate') || msg?.includes('unique')) {
-        inviteError.value = 'User ini sudah diundang atau sudah menjadi anggota.'
+      if (msg?.includes('duplicate') || msg?.includes('unique') || msg?.includes('idx_tree_members')) {
+        inviteError.value = 'Email atau user ini sudah diundang atau sudah menjadi anggota.'
       }
       else {
         inviteError.value = msg ? `Gagal mengundang: ${msg}` : 'Gagal mengundang. Coba lagi.'

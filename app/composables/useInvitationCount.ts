@@ -5,15 +5,17 @@ export function useInvitationCount() {
   const session = useSupabaseSession()
 
   async function refresh(): Promise<void> {
-    if (!session.value?.user?.id) {
+    const userId = session.value?.user?.id
+    const email = session.value?.user?.email
+    if (!userId) {
       _count.value = 0
       return
     }
     const { count } = await supabase
       .from('tree_members')
       .select('id', { count: 'exact', head: true })
-      .eq('user_id', session.value.user.id)
       .is('accepted_at', null)
+      .or(`user_id.eq.${userId}${email ? `,invited_email.eq.${email.toLowerCase()}` : ''}`)
     _count.value = count ?? 0
   }
 

@@ -38,14 +38,20 @@ export class SupabaseTreeMemberRepository implements ITreeMemberRepository {
   }
 
   async invite(input: CreateTreeMemberInput): Promise<TreeMember> {
+    const insertData: Record<string, unknown> = {
+      tree_id: input.treeId,
+      role: input.role,
+      accepted_at: input.acceptedAt ?? null,
+    }
+    if (input.userId) {
+      insertData.user_id = input.userId
+    }
+    if (input.invitedEmail) {
+      insertData.invited_email = input.invitedEmail.toLowerCase()
+    }
     const { data, error } = await this.client
       .from('tree_members')
-      .insert({
-        tree_id: input.treeId,
-        user_id: input.userId,
-        role: input.role,
-        accepted_at: input.acceptedAt ?? null,
-      })
+      .insert(insertData)
       .select()
       .single()
     if (error) throw error
