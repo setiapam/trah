@@ -44,7 +44,12 @@ export class SupabasePersonRepository implements IPersonRepository {
       .select()
       .single()
     if (error) throw error
-    return personFromDB(row)
+    const updated = personFromDB(row)
+
+    // Sync personal data to all linked copies (and original)
+    await this.syncLinkedCopies(updated)
+
+    return updated
   }
 
   async delete(id: string): Promise<void> {
@@ -230,5 +235,48 @@ export class SupabasePersonRepository implements IPersonRepository {
     }
 
     return { copiedPersons, idMap }
+  }
+
+  /**
+   * Sync personal data fields across all linked copies of a person.
+   * Works bidirectionally: updating a copy syncs the original + all other copies,
+   * and updating the original syncs all copies.
+   */
+  private async syncLinkedCopies(person: Person): Promise<void> {
+    // Fields to sync (personal data only, not tree-specific or link metadata)
+    const syncFields: Record<string, unknown> = {
+      first_name: person.firstName,
+      last_name: person.lastName,
+      nickname: person.nickname,
+      gender: person.gender,
+      birth_date: person.birthDate,
+      birth_place: person.birthPlace,
+      death_date: person.deathDate,
+      death_place: person.deathPlace,
+      is_alive: person.isAlive,
+      photo_url: person.photoUrl,
+      phone: person.phone,
+      email: person.email,
+      address: person.address,
+      notes: person.notes,
+    }
+
+    // Determine the original person ID
+    const originalId = person.linkedPersonId ?? person.id
+
+    // Update the original if we edited a copy
+    if (person.linkedPersonId) {
+      await this.client
+        .from('persons')
+        .update(syncFields)
+        .eq('id', originalId)
+    }
+
+    // Update all copies that point to the same original (excluding the person we just updated)
+    await this.client
+      .from('persons')
+      .update(syncFields)
+      .eq('linked_person_id', originalId)
+      .neq('id', person.id)
   }
 }

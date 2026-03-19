@@ -5,6 +5,18 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.2.0] — 2026-03-20
+
+### Added
+
+- **Sinkronisasi linked person** — Update data person di trah manapun otomatis tersinkron ke semua salinan (linked copies) di trah lain. Berlaku dua arah: update di sumber → update semua salinan, update di salinan → update sumber + semua salinan lain. Field yang disinkron: nama, gender, tanggal lahir/wafat, tempat, kontak, foto, catatan
+
+### Changed
+
+- **Label wafat di pohon** — Tanda salib (†) diganti dengan teks "Almarhum/Almarhumah" sesuai gender. Jika tidak ada data tanggal lahir/wafat, tetap tampil label almarhum tanpa simbol salib
+
+---
+
 ## [1.1.1] — 2026-03-20
 
 ### Added

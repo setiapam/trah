@@ -85,12 +85,13 @@ function getInitials(person: Person): string {
 
 function getBirthDeathLabel(person: Person): string {
   const birth = person.birthDate ? new Date(person.birthDate).getFullYear().toString() : null
-  const death = person.deathDate
-    ? new Date(person.deathDate).getFullYear().toString()
-    : (!person.isAlive ? '†' : null)
-  if (birth && death) return `${birth} – ${death}`
+  const deathYear = person.deathDate ? new Date(person.deathDate).getFullYear().toString() : null
+  const alm = person.gender === 'F' ? 'Almarhumah' : 'Almarhum'
+  if (birth && deathYear) return `${birth} – ${deathYear}`
+  if (birth && !person.isAlive) return `${birth} (${alm})`
+  if (deathYear) return `Wafat ${deathYear}`
+  if (!person.isAlive) return alm
   if (birth) return birth
-  if (death) return death
   return ''
 }
 
