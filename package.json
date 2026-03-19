@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@nuxt/ui": "^4.5.1",
+    "@nuxtjs/sitemap": "^7.6.0",
     "@nuxtjs/supabase": "^2.0.4",
     "@pinia/nuxt": "^0.11.3",
     "@vue-flow/core": "^1.48.2",
@@ -28,6 +29,7 @@
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
     "nuxt": "^4.4.2",
+    "nuxt-schema-org": "^5.0.10",
     "pinia": "^3.0.4",
     "uuid": "^13.0.0",
     "vue": "^3.5.30",

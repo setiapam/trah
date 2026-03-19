@@ -5,6 +5,11 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  site: {
+    url: 'https://trah.murphi.my.id',
+    name: 'Trah — Aplikasi Silsilah Keluarga Digital',
+  },
+
   modules: [
     '@nuxtjs/supabase',
     '@nuxt/ui',
@@ -12,7 +17,24 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxt/test-utils/module',
     '@nuxt/eslint',
+    '@nuxtjs/sitemap',
+    'nuxt-schema-org',
   ],
+
+  schemaOrg: {
+    identity: 'Organization',
+  },
+
+  sitemap: {
+    exclude: [
+      '/auth/**',
+      '/settings/**',
+      '/dashboard/**',
+      '/tree/**',
+      '/person/**',
+      '/invite/**',
+    ],
+  },
 
   supabase: {
     types: '~/types/database.types.ts',

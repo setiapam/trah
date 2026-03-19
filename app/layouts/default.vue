@@ -35,26 +35,28 @@
                 {{ pendingCount > 9 ? '9+' : pendingCount }}
               </span>
             </UButton>
+          </template>
 
-            <UButton
-              icon="i-simple-icons-github"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              title="GitHub"
-              to="https://github.com/setiapam/trah"
-              target="_blank"
-            />
+          <UButton
+            icon="i-simple-icons-github"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            title="GitHub"
+            to="https://github.com/setiapam/trah"
+            target="_blank"
+          />
 
-            <UButton
-              :icon="colorModeIcon"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              :title="colorModeLabel"
-              @click="cycleColorMode"
-            />
+          <UButton
+            :icon="colorModeIcon"
+            color="neutral"
+            variant="ghost"
+            size="sm"
+            :title="colorModeLabel"
+            @click="cycleColorMode"
+          />
 
+          <template v-if="user">
             <UDropdownMenu :items="userMenuItems">
               <UButton variant="ghost" size="sm" class="gap-2">
                 <UAvatar :alt="user.email" size="xs" />
@@ -64,15 +66,7 @@
             </UDropdownMenu>
           </template>
 
-          <template v-else>
-            <UButton
-              :icon="colorModeIcon"
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              :title="colorModeLabel"
-              @click="cycleColorMode"
-            />
+          <template v-if="!user">
             <UButton to="/auth/login" variant="ghost" size="sm">Masuk</UButton>
             <UButton to="/auth/register" size="sm">Daftar</UButton>
           </template>

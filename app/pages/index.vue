@@ -141,8 +141,36 @@
       </div>
     </section>
 
+    <!-- FAQ Section (SEO long-tail keywords) -->
+    <section class="bg-amber-50 dark:bg-stone-950 py-20 px-4 sm:px-6 lg:px-8 bg-kawung">
+      <div class="max-w-3xl mx-auto">
+        <div class="text-center mb-14">
+          <span class="trah-ornament justify-center mb-3 text-amber-700/70">Pertanyaan Umum</span>
+          <h2 class="trah-title font-javanese text-3xl sm:text-4xl font-bold text-stone-800 dark:text-stone-100 mb-4">
+            Yang sering ditanyakan
+          </h2>
+        </div>
+
+        <div class="space-y-4">
+          <details
+            v-for="faq in faqs"
+            :key="faq.q"
+            class="group card-emas bg-white dark:bg-stone-900 rounded-xl ring-1 ring-amber-200/60 overflow-hidden"
+          >
+            <summary class="flex items-center justify-between cursor-pointer px-6 py-4 font-medium text-stone-800 dark:text-stone-100 hover:bg-amber-50/50 dark:hover:bg-stone-800/50 transition-colors">
+              <span>{{ faq.q }}</span>
+              <UIcon name="i-heroicons-chevron-down" class="h-5 w-5 text-amber-600 transition-transform group-open:rotate-180 flex-shrink-0 ml-4" />
+            </summary>
+            <div class="px-6 pb-4 text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+              {{ faq.a }}
+            </div>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <!-- CTA Section -->
-    <section class="bg-amber-50 dark:bg-stone-950 py-20 px-4 text-center bg-kawung">
+    <section class="bg-white dark:bg-stone-900 py-20 px-4 text-center">
       <div class="max-w-2xl mx-auto">
         <p class="trah-ornament justify-center mb-3 text-amber-700/70">Mulai Sekarang</p>
         <h2 class="font-javanese text-3xl sm:text-4xl font-bold text-stone-800 dark:text-stone-100 mb-4">
@@ -175,7 +203,8 @@
             <NuxtLink to="/auth/register" class="hover:text-amber-400 transition-colors">Daftar</NuxtLink>
             <NuxtLink to="/auth/login" class="hover:text-amber-400 transition-colors">Masuk</NuxtLink>
             <NuxtLink to="/dashboard" class="hover:text-amber-400 transition-colors">Dashboard</NuxtLink>
-            <NuxtLink to="/settings/import" class="hover:text-amber-400 transition-colors">Import Data</NuxtLink>
+            <NuxtLink to="/settings/import" class="hover:text-amber-400 transition-colors">Import GEDCOM</NuxtLink>
+            <a href="https://github.com/setiapam/trah" target="_blank" rel="noopener" class="hover:text-amber-400 transition-colors">GitHub</a>
           </nav>
         </div>
         <div class="trah-divider opacity-20 mb-6">
@@ -190,20 +219,26 @@
 </template>
 
 <script setup lang="ts">
+const title = 'Trah — Aplikasi Silsilah Keluarga Digital Indonesia'
+const description = 'Aplikasi gratis untuk mencatat, mengelola, dan memvisualisasikan silsilah keluarga secara digital. Pohon keluarga interaktif, ekspor GEDCOM, kolaborasi keluarga, dan pernikahan antar-trah. Lestarikan warisan leluhur untuk generasi mendatang.'
+
 useHead({
-  title: 'Trah — Nguri-uri Trah, Njaga Sejarah',
-  meta: [
-    { name: 'description', content: 'Aplikasi web pencatatan silsilah keluarga. Simpan, kelola, dan visualisasikan pohon keluarga Anda secara digital. Gratis, aman, dan mudah digunakan.' },
-    { property: 'og:title', content: 'Trah — Nguri-uri Trah, Njaga Sejarah' },
-    { property: 'og:description', content: 'Lestarikan warisan leluhur secara digital. Catat anggota keluarga, visualisasikan silsilah, dan kolaborasikan bersama keluarga.' },
-    { property: 'og:type', content: 'website' },
-    { name: 'twitter:card', content: 'summary_large_image' },
-    { name: 'twitter:title', content: 'Trah — Aplikasi Silsilah Keluarga' },
-    { name: 'twitter:description', content: 'Lestarikan warisan leluhur secara digital. Visualisasi pohon keluarga interaktif, ekspor GEDCOM, kolaborasi keluarga.' },
-  ],
+  title,
+  titleTemplate: '',
   link: [
-    { rel: 'canonical', href: 'https://trah.app/' },
+    { rel: 'canonical', href: 'https://trah.murphi.my.id/' },
   ],
+})
+
+useSeoMeta({
+  description,
+  ogTitle: title,
+  ogDescription: description,
+  ogUrl: 'https://trah.murphi.my.id/',
+  ogImage: 'https://trah.murphi.my.id/og-image.png',
+  twitterTitle: title,
+  twitterDescription: description,
+  twitterImage: 'https://trah.murphi.my.id/og-image.png',
 })
 
 const steps = [
@@ -266,4 +301,70 @@ const features = [
     description: 'Buat trah baru langsung dari anggota yang sudah ada. Otomatis terhubung dengan trah asal melalui salinan terlink.',
   },
 ]
+
+const faqs = [
+  {
+    q: 'Apa itu Trah?',
+    a: 'Trah adalah aplikasi web gratis untuk mencatat dan memvisualisasikan silsilah keluarga secara digital. Kata "Trah" berasal dari bahasa Jawa yang berarti keturunan atau garis keluarga. Aplikasi ini membantu Anda melestarikan sejarah keluarga untuk generasi mendatang.',
+  },
+  {
+    q: 'Apakah Trah gratis?',
+    a: 'Ya, Trah sepenuhnya gratis. Anda bisa membuat akun, menambah anggota keluarga, memvisualisasikan pohon keluarga, dan berkolaborasi dengan keluarga tanpa biaya apapun.',
+  },
+  {
+    q: 'Bagaimana cara membuat pohon keluarga di Trah?',
+    a: 'Cukup daftar akun gratis, buat trah baru, dan mulai tambahkan anggota keluarga beserta relasinya (orang tua, anak, pasangan). Pohon keluarga akan otomatis divisualisasikan secara interaktif.',
+  },
+  {
+    q: 'Apa itu format GEDCOM?',
+    a: 'GEDCOM (Genealogical Data Communication) adalah format standar internasional untuk pertukaran data silsilah keluarga. Trah mendukung GEDCOM 5.5.1 sehingga Anda bisa mengimpor data dari Gramps, MyHeritage, FamilySearch, dan platform genealogi lainnya.',
+  },
+  {
+    q: 'Bisakah anggota keluarga dari trah berbeda dihubungkan?',
+    a: 'Ya! Fitur Pernikahan Antar-Trah memungkinkan Anda menghubungkan anggota keluarga dari trah berbeda saat menikah. Data akan otomatis terhubung tanpa perlu input ulang.',
+  },
+  {
+    q: 'Apakah data silsilah keluarga saya aman?',
+    a: 'Keamanan data adalah prioritas kami. Trah menggunakan Supabase dengan Row Level Security (RLS) sehingga hanya Anda dan anggota yang Anda undang yang bisa mengakses data keluarga Anda.',
+  },
+]
+
+useSchemaOrg([
+  defineWebPage({
+    '@type': 'WebPage',
+    name: title,
+    description,
+  }),
+  defineSoftwareApp({
+    name: 'Trah',
+    operatingSystem: 'Web',
+    applicationCategory: 'LifestyleApplication',
+    description,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'IDR',
+    },
+  }),
+])
+
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      innerHTML: JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'FAQPage',
+        mainEntity: faqs.map(f => ({
+          '@type': 'Question',
+          name: f.q,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: f.a,
+          },
+        })),
+      }),
+    },
+  ],
+})
 </script>

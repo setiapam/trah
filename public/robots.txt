@@ -1,2 +1,10 @@
 User-Agent: *
-Disallow:
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard/
+Disallow: /settings/
+Disallow: /tree/
+Disallow: /person/
+Disallow: /invite/
+
+Sitemap: https://trah.murphi.my.id/sitemap.xml
