@@ -7,9 +7,13 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ## [1.1.1] — 2026-03-20
 
+### Added
+
+- **Service Worker (PWA)** — Menambahkan `@vite-pwa/nuxt` dengan Workbox untuk caching di browser. Build assets di-precache, Google Fonts dan foto Supabase Storage di-cache CacheFirst, halaman navigasi di-cache NetworkFirst. Mengurangi request ke Cloudflare Pages secara signifikan karena assets dilayani dari cache browser tanpa network request
+
 ### Changed
 
-- **Optimasi cache control** — Konfigurasi `routeRules` di `nuxt.config.ts` dan file `_headers` untuk Cloudflare Pages. Build assets (`_nuxt/*`) di-cache 1 tahun (immutable), file statis 1 minggu, halaman publik 1 jam di browser + 1 hari di CDN dengan stale-while-revalidate. Halaman auth/protected tidak di-cache. Meminimalkan request ke Cloudflare Pages agar tidak melebihi quota harian.
+- **Optimasi cache control** — Konfigurasi `routeRules` di `nuxt.config.ts` dan file `_headers` untuk Cloudflare Pages. Build assets (`_nuxt/*`) di-cache 1 tahun (immutable), file statis 1 minggu, halaman publik 1 jam di browser + 1 hari di CDN dengan stale-while-revalidate. Halaman auth/protected tidak di-cache. Meminimalkan request ke Cloudflare Pages agar tidak melebihi quota harian
 
 ---
 
