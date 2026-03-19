@@ -5,6 +5,14 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.1.1] — 2026-03-20
+
+### Changed
+
+- **Optimasi cache control** — Konfigurasi `routeRules` di `nuxt.config.ts` dan file `_headers` untuk Cloudflare Pages. Build assets (`_nuxt/*`) di-cache 1 tahun (immutable), file statis 1 minggu, halaman publik 1 jam di browser + 1 hari di CDN dengan stale-while-revalidate. Halaman auth/protected tidak di-cache. Meminimalkan request ke Cloudflare Pages agar tidak melebihi quota harian.
+
+---
+
 ## [1.1.0] — 2026-03-20
 
 ### Added
