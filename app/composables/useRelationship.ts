@@ -91,10 +91,36 @@ export function useRelationship() {
       .map(r => r.personId)
   }
 
-  function getChildren(personId: string): string[] {
+  function getChildRelationships(personId: string): { relId: string; childId: string; sortOrder: number }[] {
     return relationships.value
       .filter(r => r.relationshipType === 'parent' && r.personId === personId)
-      .map(r => r.relatedPersonId)
+      .map(r => ({ relId: r.id, childId: r.relatedPersonId, sortOrder: r.sortOrder }))
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+  }
+
+  function getChildren(personId: string): string[] {
+    return getChildRelationships(personId).map(r => r.childId)
+  }
+
+  async function reorderChildren(parentId: string, childRelationshipIds: string[]): Promise<boolean> {
+    loading.value = true
+    error.value = null
+    try {
+      await getRepos().relationship.reorderChildren(parentId, childRelationshipIds)
+      // Update local sort_order
+      childRelationshipIds.forEach((relId, index) => {
+        const rel = relationships.value.find(r => r.id === relId)
+        if (rel) rel.sortOrder = index
+      })
+      return true
+    }
+    catch (e: unknown) {
+      error.value = getErrorMessage(e, 'Gagal mengubah urutan anak')
+      return false
+    }
+    finally {
+      loading.value = false
+    }
   }
 
   function getSpouses(personId: string): string[] {
@@ -127,7 +153,9 @@ export function useRelationship() {
     getPersonRelationships,
     getParents,
     getChildren,
+    getChildRelationships,
     getSpouses,
     getSiblings,
+    reorderChildren,
   }
 }

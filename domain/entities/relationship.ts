@@ -11,6 +11,7 @@ export const RelationshipSchema = z.object({
   relationshipType: RelationshipTypeSchema,
   marriageDate: z.string().nullable().optional(),
   divorceDate: z.string().nullable().optional(),
+  sortOrder: z.number().default(0),
   createdAt: z.string().optional(),
 })
 

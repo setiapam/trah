@@ -188,16 +188,36 @@
               <div v-if="childPersons.length > 0">
                 <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Anak</p>
                 <div class="space-y-2">
-                  <PersonRelationItem
-                    v-for="p in childPersons"
-                    :key="p.person.id"
-                    :person="p.person"
-                    :relationship-id="p.relId"
-                    :can-edit="canEdit"
-                    :show-edit="true"
-                    @edit="onEditRel"
-                    @delete="onDeleteRel"
-                  />
+                  <div v-for="(p, idx) in childPersons" :key="p.person.id" class="flex items-center gap-1">
+                    <div class="flex-1">
+                      <PersonRelationItem
+                        :person="p.person"
+                        :relationship-id="p.relId"
+                        :can-edit="canEdit"
+                        :show-edit="true"
+                        @edit="onEditRel"
+                        @delete="onDeleteRel"
+                      />
+                    </div>
+                    <div v-if="canEdit && childPersons.length > 1" class="flex flex-col gap-0.5 flex-shrink-0">
+                      <UButton
+                        icon="i-heroicons-chevron-up"
+                        color="neutral"
+                        variant="ghost"
+                        size="2xs"
+                        :disabled="idx === 0"
+                        @click="onMoveChild(idx, idx - 1)"
+                      />
+                      <UButton
+                        icon="i-heroicons-chevron-down"
+                        color="neutral"
+                        variant="ghost"
+                        size="2xs"
+                        :disabled="idx === childPersons.length - 1"
+                        @click="onMoveChild(idx, idx + 1)"
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
               <!-- Siblings -->
@@ -363,7 +383,7 @@ const personId = route.params.id as string
 const session = useSupabaseSession()
 const supabase = useSupabaseClient()
 const { currentPerson, loading: personLoading, fetchPerson, updatePerson } = usePerson()
-const { relationships, loading: relLoading, fetchRelationships, createRelationship, updateRelationship, deleteRelationship, getParents, getChildren, getSpouses, getSiblings } = useRelationship()
+const { relationships, loading: relLoading, fetchRelationships, createRelationship, updateRelationship, deleteRelationship, getParents, getChildren, getChildRelationships, getSpouses, getSiblings, reorderChildren } = useRelationship()
 
 const showEditForm = ref(false)
 const showRelSelector = ref(false)
@@ -504,10 +524,9 @@ const spousePersons = computed(() => {
 
 const childPersons = computed(() => {
   if (!currentPerson.value) return []
-  return getChildren(currentPerson.value.id)
-    .map((id) => {
-      const rel = relationships.value.find(r => r.personId === currentPerson.value!.id && r.relatedPersonId === id)
-      return { person: getPersonById(id), relId: rel?.id ?? '' }
+  return getChildRelationships(currentPerson.value.id)
+    .map(({ childId, relId }) => {
+      return { person: getPersonById(childId), relId }
     })
     .filter(x => x.person) as { person: Person, relId: string }[]
 })
@@ -604,9 +623,22 @@ function onPersonUpdated(person: Person) {
   showEditForm.value = false
 }
 
-function onRelAdded(_rel: Relationship) {
+async function onRelAdded(_rel: Relationship) {
   showRelSelector.value = false
-  fetchRelationships(currentPerson.value!.treeId)
+  const treeId = currentPerson.value!.treeId
+  await fetchRelationships(treeId)
+  // Refresh person list (new cross-tree persons may have been added)
+  treeParsons.value = await repos.person.getByTree(treeId)
+}
+
+async function onMoveChild(fromIndex: number, toIndex: number) {
+  if (!currentPerson.value) return
+  const relIds = childPersons.value.map(c => c.relId)
+  // Swap
+  const temp = relIds[fromIndex]
+  relIds[fromIndex] = relIds[toIndex]
+  relIds[toIndex] = temp
+  await reorderChildren(currentPerson.value.id, relIds)
 }
 
 function onEditRel(relId: string) {

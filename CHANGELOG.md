@@ -5,6 +5,22 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.3.0] — 2026-03-20
+
+### Added
+
+- **Atur urutan anak** — Tombol panah atas/bawah di daftar anak pada halaman detail person untuk menggeser urutan anak secara manual. Berguna jika tanggal lahir tidak diketahui. Data urutan disimpan di kolom `sort_order` pada tabel `relationships`
+
+### Fixed
+
+- **Filter relasi duplikat** — Anggota yang sudah punya relasi dengan person tidak lagi muncul di daftar saat menambah relasi baru. List person di-refresh setelah menambah relasi (termasuk person dari trah lain)
+
+### Database
+
+- Migration `013_relationship_sort_order.sql` — Menambah kolom `sort_order` pada tabel `relationships`
+
+---
+
 ## [1.2.0] — 2026-03-20
 
 ### Added

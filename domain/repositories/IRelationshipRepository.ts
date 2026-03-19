@@ -8,4 +8,5 @@ export interface IRelationshipRepository {
   update(id: string, data: UpdateRelationshipInput): Promise<Relationship>
   delete(id: string): Promise<void>
   bulkInsert(rels: CreateRelationshipInput[]): Promise<Relationship[]>
+  reorderChildren(parentId: string, childRelationshipIds: string[]): Promise<void>
 }

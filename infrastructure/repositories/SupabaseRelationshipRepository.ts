@@ -15,6 +15,7 @@ export class SupabaseRelationshipRepository implements IRelationshipRepository {
       .from('relationships')
       .select('*')
       .eq('tree_id', treeId)
+      .order('sort_order')
       .order('created_at')
     if (error) throw error
     return (data ?? []).map(relationshipFromDB)
@@ -55,6 +56,7 @@ export class SupabaseRelationshipRepository implements IRelationshipRepository {
     if (data.relationshipType !== undefined) patch.relationship_type = data.relationshipType
     if (data.marriageDate !== undefined) patch.marriage_date = data.marriageDate
     if (data.divorceDate !== undefined) patch.divorce_date = data.divorceDate
+    if (data.sortOrder !== undefined) patch.sort_order = data.sortOrder
 
     const { data: row, error } = await this.client
       .from('relationships')
@@ -69,6 +71,18 @@ export class SupabaseRelationshipRepository implements IRelationshipRepository {
   async delete(id: string): Promise<void> {
     const { error } = await this.client.from('relationships').delete().eq('id', id)
     if (error) throw error
+  }
+
+  async reorderChildren(parentId: string, childRelationshipIds: string[]): Promise<void> {
+    for (let i = 0; i < childRelationshipIds.length; i++) {
+      const { error } = await this.client
+        .from('relationships')
+        .update({ sort_order: i })
+        .eq('id', childRelationshipIds[i])
+        .eq('person_id', parentId)
+        .eq('relationship_type', 'parent')
+      if (error) throw error
+    }
   }
 
   async bulkInsert(rels: CreateRelationshipInput[]): Promise<Relationship[]> {

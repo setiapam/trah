@@ -113,6 +113,7 @@ export function relationshipFromDB(row: Record<string, unknown>): Relationship {
     relationshipType: row.relationship_type as 'parent' | 'spouse',
     marriageDate: (row.marriage_date as string | null) ?? null,
     divorceDate: (row.divorce_date as string | null) ?? null,
+    sortOrder: (row.sort_order as number) ?? 0,
     createdAt: row.created_at as string,
   }
 }
@@ -125,6 +126,7 @@ export function relationshipToInsert(r: CreateRelationshipInput): Record<string,
     relationship_type: r.relationshipType,
     marriage_date: r.marriageDate ?? null,
     divorce_date: r.divorceDate ?? null,
+    sort_order: r.sortOrder ?? 0,
   }
 }
 
