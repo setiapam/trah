@@ -14,5 +14,6 @@ export interface IPersonRepository {
     sourcePersonId: string,
     targetTreeId: string,
     sourceTreeRelationships: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }[],
+    existingIdMap?: Map<string, string>,
   ): Promise<{ copiedPersons: Person[]; idMap: Map<string, string> }>
 }

@@ -150,9 +150,10 @@ export class SupabasePersonRepository implements IPersonRepository {
     sourcePersonId: string,
     targetTreeId: string,
     sourceTreeRelationships: { personId: string; relatedPersonId: string; relationshipType: string; marriageDate?: string | null; divorceDate?: string | null }[],
+    existingIdMap?: Map<string, string>,
   ): Promise<{ copiedPersons: Person[]; idMap: Map<string, string> }> {
     // Map from source person ID to target person ID
-    const idMap = new Map<string, string>()
+    const idMap = new Map<string, string>(existingIdMap ?? [])
     const copiedPersons: Person[] = []
 
     // Collect all person IDs to copy: the root person + all descendants (spouses, children, recursively)
@@ -164,12 +165,12 @@ export class SupabasePersonRepository implements IPersonRepository {
 
       for (const rel of sourceTreeRelationships) {
         if (rel.relationshipType === 'spouse') {
-          // Copy spouses
-          if (rel.personId === personId && !personIdsToCopy.has(rel.relatedPersonId)) {
-            personIdsToCopy.add(rel.relatedPersonId)
-          }
-          if (rel.relatedPersonId === personId && !personIdsToCopy.has(rel.personId)) {
-            personIdsToCopy.add(rel.personId)
+          // Copy spouses (skip if already pre-mapped)
+          const spouseId = rel.personId === personId ? rel.relatedPersonId
+            : rel.relatedPersonId === personId ? rel.personId
+              : null
+          if (spouseId && !personIdsToCopy.has(spouseId) && !idMap.has(spouseId)) {
+            personIdsToCopy.add(spouseId)
           }
         }
         if (rel.relationshipType === 'parent' && rel.personId === personId) {

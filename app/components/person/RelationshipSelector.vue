@@ -382,7 +382,26 @@ async function submit() {
         divorceDate: r.divorceDate,
       }))
 
-      const result = await createLinkedCopyWithDescendants(selectedCrossTreePerson.value.id, props.treeId, relData)
+      // Pre-map: the current person already exists in the target tree.
+      // Find the spouse(s) of the selected person in the source tree and map to current person.
+      // Only auto-map if there's exactly one spouse (otherwise ambiguous).
+      const preMap = new Map<string, string>()
+      const sourceSpouseIds: string[] = []
+      for (const r of relData) {
+        if (r.relationshipType === 'spouse') {
+          if (r.personId === selectedCrossTreePerson.value!.id) {
+            sourceSpouseIds.push(r.relatedPersonId)
+          }
+          else if (r.relatedPersonId === selectedCrossTreePerson.value!.id) {
+            sourceSpouseIds.push(r.personId)
+          }
+        }
+      }
+      if (sourceSpouseIds.length === 1) {
+        preMap.set(sourceSpouseIds[0], props.personId)
+      }
+
+      const result = await createLinkedCopyWithDescendants(selectedCrossTreePerson.value.id, props.treeId, relData, preMap)
       if (!result) {
         submitError.value = 'Gagal menambah anggota dari trah lain'
         crossTreeCreating.value = false
