@@ -60,8 +60,15 @@ export function buildTree(
       }
     }
 
-    // Sort children by birthDate asc (null last)
+    // Sort children by sortOrder first, then birthDate asc (null last)
     const sortedChildIds = Array.from(childIds).sort((a, b) => {
+      // Find the parent→child relationship to get sortOrder
+      const relA = relationships.find(r => r.relationshipType === 'parent' && parentIds.has(r.personId) && r.relatedPersonId === a)
+      const relB = relationships.find(r => r.relationshipType === 'parent' && parentIds.has(r.personId) && r.relatedPersonId === b)
+      const sortA = relA?.sortOrder ?? 0
+      const sortB = relB?.sortOrder ?? 0
+      if (sortA !== sortB) return sortA - sortB
+
       const pa = personMap.get(a)
       const pb = personMap.get(b)
       const da = pa?.birthDate ? new Date(pa.birthDate).getTime() : null
