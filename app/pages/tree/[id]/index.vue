@@ -155,9 +155,11 @@
             </p>
             <p class="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
               <span v-if="person.birthDate">{{ formatYear(person.birthDate) }}</span>
-              <span v-if="person.birthDate && (person.deathDate || !person.isAlive)"> – </span>
-              <span v-if="!person.isAlive || person.deathDate">{{ person.deathDate ? formatYear(person.deathDate) : '†' }}</span>
-              <span v-if="!person.birthDate && person.isAlive" class="text-green-500">Masih hidup</span>
+              <span v-if="person.birthDate && person.deathDate"> – </span>
+              <span v-if="person.deathDate">{{ formatYear(person.deathDate) }}</span>
+              <span v-if="!person.isAlive && !person.deathDate && person.birthDate"> ({{ person.gender === 'F' ? 'Almarhumah' : 'Almarhum' }})</span>
+              <span v-if="!person.isAlive && !person.birthDate && !person.deathDate">{{ person.gender === 'F' ? 'Almarhumah' : 'Almarhum' }}</span>
+              <span v-if="person.isAlive && !person.birthDate" class="text-green-500">Masih hidup</span>
             </p>
           </div>
           <UDropdownMenu :items="personMenuItems(person)">
