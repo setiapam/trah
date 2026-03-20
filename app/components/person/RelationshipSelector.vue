@@ -116,6 +116,42 @@
             <SharedDateInput v-model="marriageDate" />
           </UFormField>
 
+          <!-- Other parent selection (for child type) -->
+          <div v-if="selectedType === 'child' && spouseOptions.length > 0">
+            <UFormField :label="spouseOptions.length === 1 ? 'Orang Tua Kedua (Otomatis)' : 'Pilih Orang Tua Kedua'">
+              <div v-if="spouseOptions.length === 1" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800">
+                <UAvatar :src="spouseOptions[0].photoUrl ?? undefined" :alt="getFullName(spouseOptions[0])" size="xs" />
+                <span class="text-sm text-gray-700 dark:text-gray-300">{{ getFullName(spouseOptions[0]) }}</span>
+                <UBadge color="success" variant="soft" size="xs">Otomatis ditambahkan</UBadge>
+              </div>
+              <div v-else class="space-y-1">
+                <button
+                  v-for="sp in spouseOptions"
+                  :key="sp.id"
+                  class="w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-sm"
+                  :class="selectedOtherParentId === sp.id
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-950'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'"
+                  @click="selectedOtherParentId = selectedOtherParentId === sp.id ? null : sp.id"
+                >
+                  <UAvatar :src="sp.photoUrl ?? undefined" :alt="getFullName(sp)" size="xs" />
+                  <span class="text-gray-700 dark:text-gray-300">{{ getFullName(sp) }}</span>
+                  <UIcon v-if="selectedOtherParentId === sp.id" name="i-heroicons-check-circle" class="ml-auto text-primary-500 h-4 w-4" />
+                </button>
+                <button
+                  class="w-full flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors text-sm"
+                  :class="selectedOtherParentId === null
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-950'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'"
+                  @click="selectedOtherParentId = null"
+                >
+                  <UIcon name="i-heroicons-minus-circle" class="h-5 w-5 text-gray-400" />
+                  <span class="text-gray-500">Tanpa orang tua kedua</span>
+                </button>
+              </div>
+            </UFormField>
+          </div>
+
           <UAlert v-if="submitError" color="error" :title="submitError" />
         </div>
 
@@ -161,6 +197,7 @@ const repos = nuxtApp.$repos as any
 
 const selectedType = ref<'parent' | 'child' | 'spouse'>('child')
 const selectedPersonId = ref<string | null>(null)
+const selectedOtherParentId = ref<string | null>(null)
 const marriageDate = ref('')
 const searchQuery = ref('')
 const personError = ref('')
@@ -183,11 +220,62 @@ const existingRelatedIds = computed(() => {
   return new Set(props.existingRelationships.flatMap(r => [r.personId, r.relatedPersonId]))
 })
 
+// Compute sibling IDs (children of the same parents, excluding self)
+const siblingIds = computed(() => {
+  const ids = new Set<string>()
+  // Find parents of current person
+  const parentIds = props.existingRelationships
+    .filter(r => r.relationshipType === 'parent' && r.relatedPersonId === props.personId)
+    .map(r => r.personId)
+  // Find all relationships in the tree to get other children of these parents
+  for (const rel of allTreeRelationships.value) {
+    if (rel.relationshipType === 'parent' && parentIds.includes(rel.personId) && rel.relatedPersonId !== props.personId) {
+      ids.add(rel.relatedPersonId)
+    }
+  }
+  return ids
+})
+
+// All relationships in the tree (needed to compute siblings)
+const allTreeRelationships = ref<Relationship[]>([])
+
+// Load all tree relationships when modal opens
+watch(() => props.open, async (val) => {
+  if (val) {
+    try {
+      allTreeRelationships.value = await repos.relationship.getByTree(props.treeId)
+    }
+    catch {
+      allTreeRelationships.value = []
+    }
+  }
+})
+
+// Compute spouses of current person (for auto-assigning other parent when adding child)
+const spouseOptions = computed(() => {
+  const spouseIds = props.existingRelationships
+    .filter(r => r.relationshipType === 'spouse'
+      && (r.personId === props.personId || r.relatedPersonId === props.personId))
+    .map(r => r.personId === props.personId ? r.relatedPersonId : r.personId)
+  return props.persons.filter(p => spouseIds.includes(p.id))
+})
+
+// Auto-select the only spouse when switching to child type
+watch([selectedType, spouseOptions], () => {
+  if (selectedType.value === 'child' && spouseOptions.value.length === 1) {
+    selectedOtherParentId.value = spouseOptions.value[0].id
+  }
+  else {
+    selectedOtherParentId.value = null
+  }
+})
+
 const filteredLocalPersons = computed(() => {
   const q = searchQuery.value.toLowerCase()
   return props.persons.filter((p) => {
     if (p.id === props.personId) return false
     if (existingRelatedIds.value.has(p.id)) return false
+    if (siblingIds.value.has(p.id)) return false
     if (!q) return true
     return getFullName(p).toLowerCase().includes(q)
       || (p.nickname ?? '').toLowerCase().includes(q)
@@ -229,6 +317,7 @@ function switchSearchMode(mode: 'local' | 'cross') {
 watch(() => props.open, (val) => {
   if (val) {
     selectedPersonId.value = null
+    selectedOtherParentId.value = null
     selectedType.value = 'child'
     marriageDate.value = ''
     searchQuery.value = ''
@@ -358,11 +447,21 @@ async function submit() {
   }
 
   const rel = await createRelationship(input)
-  if (rel) {
-    emit('added', rel)
-  }
-  else {
+  if (!rel) {
     submitError.value = repoError.value ?? 'Gagal menambah relasi'
+    return
   }
+
+  // Auto-add other parent relationship when adding a child
+  if (selectedType.value === 'child' && selectedOtherParentId.value) {
+    await createRelationship({
+      treeId: props.treeId,
+      personId: selectedOtherParentId.value,
+      relatedPersonId: targetPersonId,
+      relationshipType: 'parent',
+    })
+  }
+
+  emit('added', rel)
 }
 </script>
