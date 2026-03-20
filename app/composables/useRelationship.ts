@@ -107,11 +107,25 @@ export function useRelationship() {
     error.value = null
     try {
       await getRepos().relationship.reorderChildren(parentId, childRelationshipIds)
-      // Update local sort_order
+      // Update local sort_order for the specified parent
+      const childSortMap = new Map<string, number>()
       childRelationshipIds.forEach((relId, index) => {
         const rel = relationships.value.find(r => r.id === relId)
-        if (rel) rel.sortOrder = index
+        if (rel) {
+          rel.sortOrder = index
+          childSortMap.set(rel.relatedPersonId, index)
+        }
       })
+      // Also sync local sort_order for other parents' relationships to the same children
+      for (const rel of relationships.value) {
+        if (
+          rel.relationshipType === 'parent'
+          && rel.personId !== parentId
+          && childSortMap.has(rel.relatedPersonId)
+        ) {
+          rel.sortOrder = childSortMap.get(rel.relatedPersonId)!
+        }
+      }
       return true
     }
     catch (e: unknown) {

@@ -42,9 +42,24 @@ export class SupabaseRelationshipRepository implements IRelationshipRepository {
   }
 
   async create(rel: CreateRelationshipInput): Promise<Relationship> {
+    const insert = relationshipToInsert(rel)
+
+    // Auto-assign sort_order for parent relationships if not explicitly set
+    if (rel.relationshipType === 'parent' && (rel.sortOrder === undefined || rel.sortOrder === 0)) {
+      const { data: maxRow } = await this.client
+        .from('relationships')
+        .select('sort_order')
+        .eq('person_id', rel.personId)
+        .eq('relationship_type', 'parent')
+        .order('sort_order', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      insert.sort_order = (maxRow?.sort_order ?? -1) + 1
+    }
+
     const { data, error } = await this.client
       .from('relationships')
-      .insert(relationshipToInsert(rel))
+      .insert(insert)
       .select()
       .single()
     if (error) throw error
@@ -74,14 +89,35 @@ export class SupabaseRelationshipRepository implements IRelationshipRepository {
   }
 
   async reorderChildren(parentId: string, childRelationshipIds: string[]): Promise<void> {
+    let treeId: string | null = null
+    const childSortOrders: { childId: string; sortOrder: number }[] = []
+
+    // Update the specified parent's relationships
     for (let i = 0; i < childRelationshipIds.length; i++) {
-      const { error } = await this.client
+      const { data, error } = await this.client
         .from('relationships')
         .update({ sort_order: i })
         .eq('id', childRelationshipIds[i])
-        .eq('person_id', parentId)
-        .eq('relationship_type', 'parent')
+        .select('related_person_id, tree_id')
+        .single()
       if (error) throw error
+      if (data) {
+        treeId = data.tree_id
+        childSortOrders.push({ childId: data.related_person_id, sortOrder: i })
+      }
+    }
+
+    // Sync sort_order to other parents' relationships for the same children
+    if (treeId) {
+      for (const { childId, sortOrder } of childSortOrders) {
+        await this.client
+          .from('relationships')
+          .update({ sort_order: sortOrder })
+          .eq('tree_id', treeId)
+          .eq('related_person_id', childId)
+          .eq('relationship_type', 'parent')
+          .neq('person_id', parentId)
+      }
     }
   }
 

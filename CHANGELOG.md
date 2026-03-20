@@ -5,6 +5,18 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.3.1] — 2026-03-20
+
+### Fixed
+
+- **Urutan anak di pohon** — Saat menggeser urutan anak, sort_order kini disinkronkan ke relasi kedua orang tua (ayah dan ibu). Sebelumnya hanya satu orang tua yang di-update, menyebabkan urutan anak di visualisasi pohon berbeda dengan urutan di halaman detail
+
+### Database
+
+- Migration `014_sync_child_sort_order.sql` — Menyinkronkan sort_order antar orang tua dari anak yang sama agar urutan konsisten
+
+---
+
 ## [1.3.0] — 2026-03-20
 
 ### Added

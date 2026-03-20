@@ -61,10 +61,13 @@ export function buildTree(
     }
 
     // Sort children by sortOrder first, then birthDate asc (null last)
+    // Use the main person's relationship for sortOrder (not spouse's, which may differ)
     const sortedChildIds = Array.from(childIds).sort((a, b) => {
-      // Find the parent→child relationship to get sortOrder
-      const relA = relationships.find(r => r.relationshipType === 'parent' && parentIds.has(r.personId) && r.relatedPersonId === a)
-      const relB = relationships.find(r => r.relationshipType === 'parent' && parentIds.has(r.personId) && r.relatedPersonId === b)
+      // Prefer relationship from main person, fallback to spouse
+      const relA = relationships.find(r => r.relationshipType === 'parent' && r.personId === personId && r.relatedPersonId === a)
+        ?? relationships.find(r => r.relationshipType === 'parent' && parentIds.has(r.personId) && r.relatedPersonId === a)
+      const relB = relationships.find(r => r.relationshipType === 'parent' && r.personId === personId && r.relatedPersonId === b)
+        ?? relationships.find(r => r.relationshipType === 'parent' && parentIds.has(r.personId) && r.relatedPersonId === b)
       const sortA = relA?.sortOrder ?? 0
       const sortB = relB?.sortOrder ?? 0
       if (sortA !== sortB) return sortA - sortB
