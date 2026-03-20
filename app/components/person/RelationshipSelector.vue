@@ -317,7 +317,6 @@ function switchSearchMode(mode: 'local' | 'cross') {
 watch(() => props.open, (val) => {
   if (val) {
     selectedPersonId.value = null
-    selectedOtherParentId.value = null
     selectedType.value = 'child'
     marriageDate.value = ''
     searchQuery.value = ''
@@ -326,6 +325,13 @@ watch(() => props.open, (val) => {
     searchMode.value = 'local'
     crossTreeResults.value = []
     selectedCrossTreePerson.value = null
+    // Auto-select other parent if only one spouse
+    if (spouseOptions.value.length === 1) {
+      selectedOtherParentId.value = spouseOptions.value[0].id
+    }
+    else {
+      selectedOtherParentId.value = null
+    }
   }
 })
 
