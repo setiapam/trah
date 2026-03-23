@@ -5,7 +5,13 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
-## [1.3.2] — 2026-03-23
+## [1.4.0] — 2026-03-23
+
+### Added
+
+- **Custom auth email templates** — Edge Function `send-email` sebagai Supabase Auth Hook untuk mengirim email verifikasi, reset password, dan magic link dengan template HTML berdesain Trah (batik Jawa, palet emas/amber)
+- **Email undangan kolaborator** — Edge Function `send-invite` mengirim email undangan saat mengundang anggota ke silsilah via email, dengan template branded Trah
+- **Gmail SMTP support** — Kedua Edge Function menggunakan nodemailer dengan konfigurasi SMTP (kompatibel Gmail App Password)
 
 ### Fixed
 

@@ -285,6 +285,21 @@ async function doInvite(): Promise<void> {
     }
 
     if (ok) {
+      // Send invitation email for email-based invites
+      if (isEmail && tree.value) {
+        try {
+          await supabase.functions.invoke('send-invite', {
+            body: {
+              email: input.toLowerCase(),
+              treeName: tree.value.name,
+              role: inviteRole.value,
+            },
+          })
+        } catch (emailErr) {
+          console.warn('Invitation email failed to send:', emailErr)
+        }
+      }
+
       inviteSuccess.value = isEmail
         ? `Undangan dikirim ke ${input}. ${!isUUID ? 'Jika belum terdaftar, undangan menunggu hingga mendaftar.' : ''}`
         : 'Undangan berhasil dikirim!'
