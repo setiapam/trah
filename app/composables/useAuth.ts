@@ -16,8 +16,15 @@ export function useAuth() {
     loading.value = true
     clearError()
     try {
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error: err } = await supabase.auth.signInWithPassword({ email, password })
       if (err) throw err
+      // Manually update session state before navigating to prevent
+      // auth-redirect middleware from redirecting back to login
+      // (onAuthStateChange fires asynchronously via setTimeout)
+      if (data.session) {
+        const currentSession = useSupabaseSession()
+        currentSession.value = data.session
+      }
       await navigateTo('/dashboard')
     } catch (e: unknown) {
       error.value = getAuthErrorMessage(e)

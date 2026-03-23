@@ -5,6 +5,16 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.3.2] — 2026-03-23
+
+### Fixed
+
+- **Login email/password harus klik 2x** — Session state kini di-set secara manual sebelum navigasi ke dashboard, mencegah middleware `auth-redirect` mengarahkan kembali ke halaman login
+- **Login Google OAuth redirect ke login page** — Callback page kini menggunakan `watch(session)` reaktif dan set session secara manual setelah code exchange berhasil, menghilangkan race condition dengan `onAuthStateChange`
+- **Login page redirect check** — Pengecekan "sudah login" di halaman login kini menggunakan `useSupabaseSession()` yang konsisten dengan middleware
+
+---
+
 ## [1.3.1] — 2026-03-20
 
 ### Fixed

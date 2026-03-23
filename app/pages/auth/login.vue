@@ -98,8 +98,8 @@ definePageMeta({ layout: 'auth' })
 useHead({ title: 'Masuk — Trah', meta: [{ name: 'robots', content: 'noindex' }] })
 
 // Redirect jika sudah login
-const user = useSupabaseUser()
-if (user.value) await navigateTo('/dashboard')
+const session = useSupabaseSession()
+if (session.value) await navigateTo('/dashboard')
 
 const { loading, error, clearError, signInWithEmail, signInWithGoogle } = useAuth()
 
