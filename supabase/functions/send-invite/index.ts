@@ -1,5 +1,4 @@
 import { createTransport } from "npm:nodemailer@6.9.16"
-import { createClient } from "npm:@supabase/supabase-js@2"
 
 const transporter = createTransport({
   host: Deno.env.get("SMTP_HOST") || "smtp.gmail.com",
@@ -20,6 +19,7 @@ interface InviteRequest {
   email: string
   treeName: string
   role: string
+  inviterName?: string
 }
 
 Deno.serve(async (req) => {
@@ -32,32 +32,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Get the user from JWT
-    const authHeader = req.headers.get("Authorization")!
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    )
-
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    if (userError || !user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      )
-    }
-
-    // Get inviter profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", user.id)
-      .single()
-
-    const inviterName = profile?.display_name || user.email?.split("@")[0] || "Seseorang"
-
-    const { email, treeName, role } = await req.json() as InviteRequest
+    // JWT already verified by Supabase gateway (verify_jwt: true)
+    // inviterName is passed from client to avoid internal auth issues
+    const { email, treeName, role, inviterName: clientInviterName } = await req.json() as InviteRequest
+    const inviterName = clientInviterName || "Seseorang"
 
     if (!email || !treeName) {
       return new Response(

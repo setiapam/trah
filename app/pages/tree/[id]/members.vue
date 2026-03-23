@@ -288,11 +288,18 @@ async function doInvite(): Promise<void> {
       // Send invitation email for email-based invites
       if (isEmail && tree.value) {
         try {
+          const profile = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', session.value?.user?.id ?? '')
+            .single()
+
           await supabase.functions.invoke('send-invite', {
             body: {
               email: input.toLowerCase(),
               treeName: tree.value.name,
               role: inviteRole.value,
+              inviterName: profile.data?.display_name || session.value?.user?.email?.split('@')[0] || 'Seseorang',
             },
           })
         } catch (emailErr) {

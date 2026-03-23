@@ -93,6 +93,20 @@ export function useAuth() {
     }
   }
 
+  async function updatePassword(newPassword: string) {
+    loading.value = true
+    clearError()
+    try {
+      const { error: err } = await supabase.auth.updateUser({ password: newPassword })
+      if (err) throw err
+      return { updated: true }
+    } catch (e: unknown) {
+      error.value = getAuthErrorMessage(e)
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     user,
     loading,
@@ -103,6 +117,7 @@ export function useAuth() {
     signInWithGoogle,
     signOut,
     resetPassword,
+    updatePassword,
   }
 }
 
@@ -113,7 +128,16 @@ function getAuthErrorMessage(e: unknown): string {
     if (msg.includes('invalid login credentials')) return 'Email atau kata sandi salah'
     if (msg.includes('email not confirmed')) return 'Email belum diverifikasi. Cek kotak masuk Anda'
     if (msg.includes('user already registered')) return 'Email sudah terdaftar'
-    if (msg.includes('password should be')) return 'Kata sandi minimal 6 karakter'
+    if (msg.includes('password')) {
+      // Extract actual requirement from Supabase error (e.g. "at least 8 characters", "contain uppercase")
+      const lengthMatch = e.message.match(/at least (\d+) characters/)
+      if (lengthMatch) return `Kata sandi minimal ${lengthMatch[1]} karakter`
+      // Characters/content requirements
+      if (msg.includes('uppercase') || msg.includes('lower') || msg.includes('digit') || msg.includes('symbol'))
+        return `Kata sandi tidak memenuhi syarat: ${e.message}`
+      if (msg.includes('password should be') || msg.includes('password is too'))
+        return `Kata sandi tidak memenuhi syarat: ${e.message}`
+    }
     return e.message
   }
   return 'Terjadi kesalahan. Coba lagi.'

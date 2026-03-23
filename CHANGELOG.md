@@ -5,6 +5,20 @@ Format mengikuti [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`
 
 ---
 
+## [1.4.1] — 2026-03-24
+
+### Added
+
+- **Halaman reset password** (`/auth/reset`) — Halaman baru untuk mengatur kata sandi baru setelah klik link reset dari email, dengan tombol toggle visibilitas password
+
+### Fixed
+
+- **Reset password redirect ke login** — Halaman `/auth/reset` ditambahkan ke exclude list Supabase redirect, mencegah redirect otomatis ke login
+- **Error password selalu "minimal 6 karakter"** — Pesan error dari Supabase kini menampilkan persyaratan sebenarnya (panjang, huruf besar, dll) bukan hardcoded "6 karakter"
+- **Email undangan kolaborator tidak terkirim (401)** — Edge Function `send-invite` gagal karena JWT ES256 tidak kompatibel dengan `verify_jwt` gateway. Diperbaiki dengan mengirim `inviterName` dari client dan set `verify_jwt: false`
+
+---
+
 ## [1.4.0] — 2026-03-23
 
 ### Added
